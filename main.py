@@ -1,15 +1,12 @@
 # pygame template
 
-import pygame
+import pygame, sys, math
 from pygame.locals import K_ESCAPE, KEYDOWN, QUIT
-
-# background
-background = pygame.image.load("test.png")
 
 pygame.init()
 
-WIDTH = 640
-HEIGHT = 480
+WIDTH = 800
+HEIGHT = 650
 SIZE = (WIDTH, HEIGHT)
 
 screen = pygame.display.set_mode(SIZE)
@@ -20,8 +17,12 @@ clock = pygame.time.Clock()
 
 circle_x = WIDTH/2
 circle_y = HEIGHT/2
+click = False
+player_speed = 5
 
 # ---------------------------
+# Load images
+background = pygame.transform.scale(pygame.image.load("chess-background.png").convert(), (WIDTH, HEIGHT))
 
 running = True
 while running:
@@ -30,39 +31,47 @@ while running:
         if event.type == KEYDOWN:
             if event.key == K_ESCAPE:
                 running = False
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            print(event.pos)
+            x, y = event.pos
+            click = True
         if event.type == pygame.QUIT:
             running = False
 
     # GAME STATE UPDATES
     # All game math and comparisons happen here
 
+
     #!! taken from mrgallo site
     keys = pygame.key.get_pressed()
     if keys[119] == True:  # w
-        circle_y -= 10
+        circle_y -= player_speed
 
     if keys[97] == True:  # a
-        circle_x -= 10
+        circle_x -= player_speed
 
     if keys[115] == True:  # s
-        circle_y += 10
+        circle_y += player_speed
 
     if keys[100] == True:  # d
-        circle_x += 10
+        circle_x += player_speed
     
 
     # DRAWING
     screen.fill((255, 255, 255))  # always the first drawing command
 
-    # background image
     screen.blit(background, (0,0))
 
-    pygame.draw.circle(screen, (0, 0, 255), (circle_x, circle_y), 30)
+    pygame.draw.circle(screen, (255, 0, 0), (WIDTH/2, HEIGHT/2), 30)
+    pygame.draw.circle(screen, (0, 255, 0), (circle_x, circle_y), 15)
+
+    if click == True:
+        pygame.draw.line(screen, (0, 0, 0), (circle_x, circle_y), (x, y), 5)
 
     # Must be the last two lines
     # of the game loop
     pygame.display.flip()
-    clock.tick(30)
+    clock.tick(60)
     #---------------------------
 
 
