@@ -4,12 +4,18 @@ import pygame
 from pygame.locals import K_ESCAPE, KEYDOWN, QUIT
 
 # background
-background = pygame.image.load("test.png")
+background = pygame.image.load("chess-background.jpg")
+#adding the white pawn png into the code 
+white_pawn = pygame.image.load("white-chess-piece.png")
+#change the scale of the picture so it isn't so large
+white_pawn = pygame.transform.scale(white_pawn, (50, 115))
+
+
 
 pygame.init()
-
-WIDTH = 640
-HEIGHT = 480
+#Christina changed the size to 1000 x 800 for a more comfortable user gameplay
+WIDTH = 1000
+HEIGHT = 800
 SIZE = (WIDTH, HEIGHT)
 
 screen = pygame.display.set_mode(SIZE)
@@ -20,7 +26,9 @@ clock = pygame.time.Clock()
 
 circle_x = WIDTH/2
 circle_y = HEIGHT/2
-
+#inital trial for where to place pawn, creating variable later to be edited
+pawn_x = 50
+pawn_y = 50
 # ---------------------------
 
 running = True
@@ -58,6 +66,10 @@ while running:
     screen.blit(background, (0,0))
 
     pygame.draw.circle(screen, (0, 0, 255), (circle_x, circle_y), 30)
+
+    #draw the pawn image onto the screen
+    screen.blit(white_pawn, (pawn_x, pawn_y))
+
 
     # Must be the last two lines
     # of the game loop
