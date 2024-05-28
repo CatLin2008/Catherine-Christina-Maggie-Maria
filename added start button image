@@ -1,0 +1,3 @@
+startImg = pygame.image.load('startbutton.png')
+smallstart = pygame.transform.scale(startImg, (77,60))
+screen.blit(smallstart, (34, 120))
