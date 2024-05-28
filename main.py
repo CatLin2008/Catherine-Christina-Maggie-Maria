@@ -17,12 +17,16 @@ clock = pygame.time.Clock()
 
 circle_x = WIDTH/2
 circle_y = HEIGHT/2
-click = False
 player_speed = 5
+player_bullet_points = []
 
 # ---------------------------
 # Load images
 background = pygame.transform.scale(pygame.image.load("chess-background.png").convert(), (WIDTH, HEIGHT))
+
+# Functions
+
+
 
 running = True
 while running:
@@ -32,16 +36,21 @@ while running:
             if event.key == K_ESCAPE:
                 running = False
         elif event.type == pygame.MOUSEBUTTONDOWN:
-            print(event.pos)
-            x, y = event.pos
-            click = True
+            print("click")
+            bullet = [circle_x, circle_y, 5, 0]
+            player_bullet_points.append(bullet)
         if event.type == pygame.QUIT:
             running = False
 
     # GAME STATE UPDATES
     # All game math and comparisons happen here
+    mouse_x, mouse_y = pygame.mouse.get_pos()
 
+    for b in player_bullet_points:
+        b[0] += b[2]
+        b[1] -= b[3]
 
+    # WASD movement
     #!! taken from mrgallo site
     keys = pygame.key.get_pressed()
     if keys[119] == True:  # w
@@ -58,15 +67,25 @@ while running:
     
 
     # DRAWING
+
+    # background
     screen.fill((255, 255, 255))  # always the first drawing command
+    # screen.blit(background, (0,0))
 
-    screen.blit(background, (0,0))
-
+    # dummy enemy
     pygame.draw.circle(screen, (255, 0, 0), (WIDTH/2, HEIGHT/2), 30)
+    # player
     pygame.draw.circle(screen, (0, 255, 0), (circle_x, circle_y), 15)
 
-    if click == True:
-        pygame.draw.line(screen, (0, 0, 0), (circle_x, circle_y), (x, y), 5)
+    # bullet tragectory
+    pygame.draw.line(screen, (0, 0, 0), (circle_x, circle_y), (mouse_x, mouse_y), 5)
+
+    # bullet
+    for b in player_bullet_points:
+        x = b[0]
+        y = b[1]
+        pygame.draw.circle(screen, (255, 255, 0), (x, y), 2)
+
 
     # Must be the last two lines
     # of the game loop
