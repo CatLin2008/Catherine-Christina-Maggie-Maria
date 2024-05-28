@@ -13,3 +13,6 @@ settings = {
         "move_right": "D",
     }
 }
+
+with open("settings.json", "w") as file:
+    json.dump(settings, file)
