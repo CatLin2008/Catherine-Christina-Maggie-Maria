@@ -1,0 +1,16 @@
+from tkinter import *
+
+def click():
+    print("clickededekdkedke")
+
+window = Tk()
+
+button = Button(window,
+                text = "start button",
+                command=click,
+                font=("Comic Sans", 30),
+                fg = "white",
+                bg="black")
+button.pack()
+
+window.mainloop()
