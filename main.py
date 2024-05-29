@@ -6,11 +6,21 @@ from pygame.locals import K_ESCAPE, KEYDOWN, QUIT
 pygame.init()
 
 WIDTH = 800
-HEIGHT = 650
+HEIGHT = 700
 SIZE = (WIDTH, HEIGHT)
+
+#font 
+text_font = pygame.font.SysFont(None, 40, bold = True)
+
+def print_text(text, font, text_colour, text_x, text_y):
+    image = font.render(text, True, text_colour)
+    screen.blit(image, (text_x, text_y))
 
 screen = pygame.display.set_mode(SIZE)
 clock = pygame.time.Clock()
+ 
+
+# ---------------------------
 
 # ---------------------------
 # Initialize global variables
