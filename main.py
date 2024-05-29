@@ -3,6 +3,21 @@
 import pygame, sys, math
 from pygame.locals import K_ESCAPE, KEYDOWN, QUIT
 
+# background
+background = pygame.image.load("Untitled drawing.png")
+white_pawn = pygame.image.load("white-chess-piece.png")
+pawn_width = 60
+pawn_height = 115
+white_pawn = pygame.transform.scale(white_pawn, (pawn_width, pawn_height))
+
+
+#queen power up image
+queenPUP = pygame.image.load("queen_powerup.png")
+queenPUP = pygame.transform.scale(queenPUP, (80, 80))
+
+#health power up image
+healthPUP = pygame.image.load("health_potion.png")
+healthPUP = pygame.transform.scale(healthPUP, (50, 50))
 pygame.init()
 
 WIDTH = 800
@@ -18,18 +33,14 @@ def print_text(text, font, text_colour, text_x, text_y):
 
 screen = pygame.display.set_mode(SIZE)
 clock = pygame.time.Clock()
- 
 
-# ---------------------------
-
-# ---------------------------
 # Initialize global variables
 
-circle_x = WIDTH/2
-circle_y = HEIGHT/2
-player_speed = 5
-player_bullet_points = []
-
+#catherines code for the player
+click = False
+player_speed = 5 
+pawn_x = WIDTH/2
+pawn_y = HEIGHT/2
 
 #Christina added queen powerup location
 queenPUP_x = random.randrange(0, 800)
@@ -65,13 +76,7 @@ slot_measurements = 65
 slot_colour = (196, 164, 132)
 slot_x = 118
 # ---------------------------
-# Load images
-background = pygame.transform.scale(pygame.image.load("chess-background.png").convert(), (WIDTH, HEIGHT))
-
 # Functions
-
-
-
 running = True
 while running:
     # EVENT HANDLING
@@ -98,39 +103,39 @@ while running:
     #!! taken from mrgallo site
     keys = pygame.key.get_pressed()
     if keys[119] == True:  # w
-        circle_y -= player_speed
+        pawn_y -= 10
 
     if keys[97] == True:  # a
-        circle_x -= player_speed
+        pawn_x -= 10
 
     if keys[115] == True:  # s
-        circle_y += player_speed
+        pawn_y += 10
 
     if keys[100] == True:  # d
-        circle_x += player_speed
-    
+        pawn_x += 10
 
     # DRAWING
 
     # background
-    screen.fill((255, 255, 255))  # always the first drawing command
-    # screen.blit(background, (0,0))
+    # background image
+    screen.blit(background, (0,0))  # always the first drawing command
+ 
 
     # dummy enemy
     pygame.draw.circle(screen, (255, 0, 0), (WIDTH/2, HEIGHT/2), 30)
     # player
-    pygame.draw.circle(screen, (0, 255, 0), (circle_x, circle_y), 15)
+    screen.blit(white_pawn, (pawn_x, pawn_y))
+
 
     # bullet tragectory
-    pygame.draw.line(screen, (0, 0, 0), (circle_x, circle_y), (mouse_x, mouse_y), 5)
+    pygame.draw.line(screen, (0, 0, 0), (pawn_x, pawn_y), (mouse_x, mouse_y), 5)
     # bullet
     for b in player_bullet_points:
         x = b[0]
         y = b[1]
         pygame.draw.circle(screen, (255, 255, 0), (x, y), 2)
 
-    # drawing the pawn image
-    screen.blit(white_pawn, (pawn_x, pawn_y))
+
     #inventory lower bar 
     pygame.draw.rect(screen, inventory_bar_colour, (100, 620, inventory_bar_width, inventory_bar_height))
     pygame.draw.rect(screen, slot_colour, (slot_x, 630, slot_measurements, slot_measurements))
