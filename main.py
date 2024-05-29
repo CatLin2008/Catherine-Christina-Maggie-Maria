@@ -15,8 +15,8 @@ clock = pygame.time.Clock()
 # ---------------------------
 # Initialize global variables
 
-circle_x = WIDTH/2
-circle_y = HEIGHT/2
+player_x = WIDTH/2
+player_y = HEIGHT/2
 player_speed = 5
 player_bullet_points = []
 
@@ -36,34 +36,50 @@ while running:
             if event.key == K_ESCAPE:
                 running = False
         elif event.type == pygame.MOUSEBUTTONDOWN:
-            print("click")
-            bullet = [circle_x, circle_y, 5, 0]
+            click_x2, click_y2 = event.pos
+            life = 30
+            dx = (click_x2 - player_x)/5
+            dy = (-click_y2 + player_y)/5
+            bullet = [player_x, player_y, dx, dy, life]
             player_bullet_points.append(bullet)
         if event.type == pygame.QUIT:
             running = False
-
     # GAME STATE UPDATES
     # All game math and comparisons happen here
     mouse_x, mouse_y = pygame.mouse.get_pos()
 
     for b in player_bullet_points:
         b[0] += b[2]
-        b[1] -= b[3]
+        b[1] -= b[3] 
+        b[4] -= 1
+        if b[0]>WIDTH/2-15 and b[0]<WIDTH/2+15 and b[1]>HEIGHT/2-15 and b[1]<HEIGHT/2+15:
+            b[4] = -1
+        
+
+
+
+    alive = []
+    for b in player_bullet_points:
+        if b[4] > 0:
+            alive.append(b)
+    player_bullet_points = alive
+        
+
 
     # WASD movement
     #!! taken from mrgallo site
     keys = pygame.key.get_pressed()
-    if keys[119] == True:  # w
-        circle_y -= player_speed
+    if keys[119] == True:  # d
+        player_y -= player_speed
 
     if keys[97] == True:  # a
-        circle_x -= player_speed
+        player_x -= player_speed
 
     if keys[115] == True:  # s
-        circle_y += player_speed
+        player_y += player_speed
 
     if keys[100] == True:  # d
-        circle_x += player_speed
+        player_x += player_speed
     
 
     # DRAWING
@@ -73,18 +89,18 @@ while running:
     # screen.blit(background, (0,0))
 
     # dummy enemy
-    pygame.draw.circle(screen, (255, 0, 0), (WIDTH/2, HEIGHT/2), 30)
+    pygame.draw.polygon(screen, (255, 0, 0), ((WIDTH/2-15, HEIGHT/2-15),(WIDTH/2+15, HEIGHT/2-15),(WIDTH/2+15, HEIGHT/2 + 15),(WIDTH/2-15, HEIGHT/2 + 15)))
     # player
-    pygame.draw.circle(screen, (0, 255, 0), (circle_x, circle_y), 15)
+    pygame.draw.circle(screen, (0, 255, 0), (player_x, player_y), 15)
 
     # bullet tragectory
-    pygame.draw.line(screen, (0, 0, 0), (circle_x, circle_y), (mouse_x, mouse_y), 5)
+    pygame.draw.line(screen, (0, 0, 255), (player_x, player_y), (mouse_x, mouse_y), 1)
 
     # bullet
     for b in player_bullet_points:
         x = b[0]
         y = b[1]
-        pygame.draw.circle(screen, (255, 255, 0), (x, y), 2)
+        pygame.draw.circle(screen, (0, 0, 0), (x, y), 2)
 
 
     # Must be the last two lines
