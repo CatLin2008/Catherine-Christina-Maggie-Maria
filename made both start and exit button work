@@ -1,0 +1,139 @@
+# Basic Movement
+import pygame
+from pygame.locals import K_ESCAPE, KEYDOWN, QUIT, K_RIGHT, K_LEFT, MOUSEBUTTONDOWN
+
+pygame.init()
+pygame.MOUSEBUTTONDOWN
+
+WIDTH = 640
+HEIGHT = 480
+SIZE = (WIDTH, HEIGHT)
+
+screen = pygame.display.set_mode(SIZE)
+clock = pygame.time.Clock()
+
+# ---------------------------
+# Initialize global variables
+circle_x = 200
+circle_y = 200
+pygame.font.get_default_font()
+scene_title_font = pygame.font.SysFont('Courier New', 45)
+current_screen = 0
+
+startx = 150
+starty = 120
+exitx = 403
+exity = 120
+
+mouse_x = 0
+mouse_y = 0
+clicked = False
+
+# ---------------------------
+
+running = True
+while running:
+    # EVENT HANDLING
+    for event in pygame.event.get():
+        if event.type == KEYDOWN:
+            if event.key == K_ESCAPE:
+                running = False
+            elif event.key == K_RIGHT:
+                print("RIGHT ARROW PRESSED")
+                current_screen += 1
+                print(current_screen)
+            elif event.kay == K_LEFT:
+            
+        elif event.type == QUIT:
+            running = False
+
+    # GAME STATE UPDATES
+    # All game math and comparisons happen here
+    if event.type == MOUSEBUTTONDOWN:
+        mouse_x, mouse_y = event.pos
+        print(mouse_x, mouse_y)
+       
+
+    keys = pygame.key.get_pressed()
+    if keys[119] == True:  # w
+        circle_y -= 10
+
+    if keys[97] == True:  # a
+        circle_x -= 10
+
+    if keys[115] == True:  # s
+        circle_y += 10
+
+    if keys[100] == True:  # d
+        circle_x += 10
+
+
+    # DRAWING
+    chessboardImg = pygame.image.load('chessboard.jpg')
+    screen.blit(chessboardImg, (100,100))
+
+
+    screen.fill((123, 134, 150))  # always the first drawing command
+
+    pygame.draw.circle(screen, (255, 254, 245), (circle_x, circle_y), 30)
+
+    if current_screen == 0:
+        # Scene 1 (Menu screen) chessboard + title
+        chessboardImg = pygame.image.load('chessboard.jpg')
+        # smallchessboard = pygame.transform.scale(chessboardImg, (30,30))
+
+        screen.blit(chessboardImg, (2,-20))
+        scene_title = scene_title_font.render('Menu Screen', True, (219, 33, 98))
+        screen.blit(scene_title, (200, 0))
+
+        pygame.draw.rect(screen, (242, 177, 202), (102,74,179,180))
+        pygame.draw.rect(screen, (217, 87, 147), (364,74,179,180))
+
+        #Start Button
+        startImg = pygame.image.load('startbutton.png')
+        smallstart = pygame.transform.scale(startImg, (97,80))
+        screen.blit(smallstart, (startx, starty))
+        #Exit Button
+        ExitImg = pygame.image.load('exitbutton.png')
+        smallexit = pygame.transform.scale(ExitImg, (97,60))
+        screen.blit(smallexit, (exitx, exity))
+
+        #check if button clicked
+        if (mouse_x>=startx and mouse_x<=startx+100) and (mouse_y>=starty and mouse_y<=starty+50) and clicked == False:
+            
+            print("Start Button CLicked")
+            mouse_x = 0 
+            mouse_y = 0
+        elif (mouse_x>=exitx and mouse_x<=exitx+100) and (mouse_y>=exity and mouse_y<=exity+50) and clicked == False:
+            print("Exit Button Clicked")
+            mouse_x = 0 
+            mouse_y = 0
+
+            break
+        
+
+        
+        
+             
+
+    elif current_screen == 1:
+        # Scene 2 (Instructions screen)
+        screen.fill((115, 85, 29)) 
+        scene_title = scene_title_font.render('Instructions Screen', True, (224, 191, 0))
+        screen.blit(scene_title, (100, 0))
+
+
+
+
+
+
+
+    # Must be the last two lines
+    # of the game loop
+    pygame.display.update()
+    pygame.display.flip()
+    clock.tick(30)
+    #---------------------------
+
+
+pygame.quit()
