@@ -1,14 +1,14 @@
 # pygame template
 
-import pygame, sys, math
+import pygame, sys, math, random
 from pygame.locals import K_ESCAPE, KEYDOWN, QUIT
 
 # background
 background = pygame.image.load("Untitled drawing.png")
 white_pawn = pygame.image.load("white-chess-piece.png")
-pawn_width = 60
-pawn_height = 115
-white_pawn = pygame.transform.scale(white_pawn, (pawn_width, pawn_height))
+player_width = 60
+player_height = 115
+white_pawn = pygame.transform.scale(white_pawn, (player_width, player_height))
 
 
 #queen power up image
@@ -21,7 +21,7 @@ healthPUP = pygame.transform.scale(healthPUP, (50, 50))
 pygame.init()
 
 WIDTH = 800
-HEIGHT = 700
+HEIGHT = 650
 SIZE = (WIDTH, HEIGHT)
 
 #font 
@@ -37,10 +37,12 @@ clock = pygame.time.Clock()
 # Initialize global variables
 
 #catherines code for the player
-click = False
+player_x = WIDTH/2
+player_y = HEIGHT/2
 player_speed = 5 
-pawn_x = WIDTH/2
-pawn_y = HEIGHT/2
+player_bullet = []
+enemy_health = 100
+death = False
 
 #Christina added queen powerup location
 queenPUP_x = random.randrange(0, 800)
@@ -85,9 +87,12 @@ while running:
             if event.key == K_ESCAPE:
                 running = False
         elif event.type == pygame.MOUSEBUTTONDOWN:
-            print("click")
-            bullet = [circle_x, circle_y, 5, 0]
-            player_bullet_points.append(bullet)
+            click_x2, click_y2 = event.pos
+            life = 30
+            dx = (click_x2 - player_x)/5
+            dy = (-click_y2 + player_y)/5
+            bullet = [player_x, player_y, dx, dy, life]
+            player_bullet.append(bullet)
         if event.type == pygame.QUIT:
             running = False
 
@@ -95,24 +100,39 @@ while running:
     # All game math and comparisons happen here
     mouse_x, mouse_y = pygame.mouse.get_pos()
 
-    for b in player_bullet_points:
-        b[0] += b[2]
-        b[1] -= b[3]
-
     # WASD movement
     #!! taken from mrgallo site
     keys = pygame.key.get_pressed()
     if keys[119] == True:  # w
-        pawn_y -= 10
+        player_y -= 10
 
     if keys[97] == True:  # a
-        pawn_x -= 10
+        player_x -= 10
 
     if keys[115] == True:  # s
-        pawn_y += 10
+        player_y += 10
 
     if keys[100] == True:  # d
-        pawn_x += 10
+        player_x += 10
+
+    # Catherine's bullet system
+
+    for b in player_bullet:
+        b[0] += b[2]
+        b[1] -= b[3] 
+        b[4] -= 1
+        if b[0]>WIDTH/2-15 and b[0]<WIDTH/2+15 and b[1]>HEIGHT/2-15 and b[1]<HEIGHT/2+15:
+            b[4] = -1
+            enemy_health -= 10
+        
+    player_bullet_alive = []
+    for b in player_bullet:
+        if b[4] > 0:
+            player_bullet_alive.append(b)
+    player_bullet = player_bullet_alive
+
+    if enemy_health <= 0:
+        death = True
 
     # DRAWING
 
@@ -122,18 +142,21 @@ while running:
  
 
     # dummy enemy
-    pygame.draw.circle(screen, (255, 0, 0), (WIDTH/2, HEIGHT/2), 30)
+    if death == False:
+        pygame.draw.polygon(screen, (255, 0, 0), ((WIDTH/2-15, HEIGHT/2-15),(WIDTH/2+15, HEIGHT/2-15),(WIDTH/2+15, HEIGHT/2 + 15),(WIDTH/2-15, HEIGHT/2 + 15)))
+    
     # player
-    screen.blit(white_pawn, (pawn_x, pawn_y))
+    screen.blit(white_pawn, (player_x, player_y))
 
 
     # bullet tragectory
-    pygame.draw.line(screen, (0, 0, 0), (pawn_x, pawn_y), (mouse_x, mouse_y), 5)
+    pygame.draw.line(screen, (0, 0, 255), (player_x, player_y), (mouse_x, mouse_y), 1)
+
     # bullet
-    for b in player_bullet_points:
+    for b in player_bullet:
         x = b[0]
         y = b[1]
-        pygame.draw.circle(screen, (255, 255, 0), (x, y), 2)
+        pygame.draw.circle(screen, (0, 0, 0), (x, y), 2)
 
 
     #inventory lower bar 
