@@ -3,7 +3,7 @@ import pygame
 from pygame.locals import K_ESCAPE, KEYDOWN, QUIT, K_RIGHT, K_LEFT, MOUSEBUTTONDOWN
 
 pygame.init()
-pygame.MOUSEBUTTONDOWN
+#pygame.MOUSEBUTTONDOWN
 
 WIDTH = 640
 HEIGHT = 480
@@ -24,6 +24,8 @@ startx = 150
 starty = 120
 exitx = 403
 exity = 120
+settingx = 604
+settingy = 6
 
 mouse_x = 0
 mouse_y = 0
@@ -42,7 +44,10 @@ while running:
                 print("RIGHT ARROW PRESSED")
                 current_screen += 1
                 print(current_screen)
-            elif event.kay == K_LEFT:
+            elif event.key == K_LEFT:
+                print("LEFT ARROW PRESSED")
+                current_screen -= 1
+                print(current_screen)
             
         elif event.type == QUIT:
             running = False
@@ -52,21 +57,20 @@ while running:
     if event.type == MOUSEBUTTONDOWN:
         mouse_x, mouse_y = event.pos
         print(mouse_x, mouse_y)
-       
 
     keys = pygame.key.get_pressed()
     if keys[119] == True:  # w
-        circle_y -= 10
+            circle_y -= 10
 
     if keys[97] == True:  # a
-        circle_x -= 10
+            circle_x -= 10
 
     if keys[115] == True:  # s
-        circle_y += 10
+            circle_y += 10
 
     if keys[100] == True:  # d
-        circle_x += 10
-
+            circle_x += 10
+       
 
     # DRAWING
     chessboardImg = pygame.image.load('chessboard.jpg')
@@ -74,11 +78,11 @@ while running:
 
 
     screen.fill((123, 134, 150))  # always the first drawing command
-
     pygame.draw.circle(screen, (255, 254, 245), (circle_x, circle_y), 30)
 
+    # Scene 1 (Menu screen) chessboard + title
     if current_screen == 0:
-        # Scene 1 (Menu screen) chessboard + title
+
         chessboardImg = pygame.image.load('chessboard.jpg')
         # smallchessboard = pygame.transform.scale(chessboardImg, (30,30))
 
@@ -98,11 +102,18 @@ while running:
         smallexit = pygame.transform.scale(ExitImg, (97,60))
         screen.blit(smallexit, (exitx, exity))
 
+        SettingImg = pygame.image.load('settingsbutton.png')
+        smallsetting = pygame.transform.scale(SettingImg, (30,30))
+        screen.blit(smallsetting, (settingx, settingy))
+
+    
+
         #check if button clicked
         if (mouse_x>=startx and mouse_x<=startx+100) and (mouse_y>=starty and mouse_y<=starty+50) and clicked == False:
             
             print("Start Button CLicked")
-            mouse_x = 0 
+            current_screen = 2
+            mouse_x = 0
             mouse_y = 0
         elif (mouse_x>=exitx and mouse_x<=exitx+100) and (mouse_y>=exity and mouse_y<=exity+50) and clicked == False:
             print("Exit Button Clicked")
@@ -110,19 +121,12 @@ while running:
             mouse_y = 0
 
             break
-        
-
-        
-        
-             
-
+    # Scene 2 (Instructions screen)
     elif current_screen == 1:
-        # Scene 2 (Instructions screen)
-        screen.fill((115, 85, 29)) 
-        scene_title = scene_title_font.render('Instructions Screen', True, (224, 191, 0))
-        screen.blit(scene_title, (100, 0))
 
-
+        screen.fill((224, 202, 211)) 
+        scene_title = scene_title_font.render('Instructions Screen', True, (242, 17, 109))
+        screen.blit(scene_title, (90, 0))
 
 
 
