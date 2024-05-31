@@ -1,23 +1,8 @@
 # pygame template
 
 import pygame, sys, math, random
-from pygame.locals import K_ESCAPE, KEYDOWN, QUIT, K_RIGHT, K_LEFT, MOUSEBUTTONDOWN
-#__________________________________
-pygame.init()
+from pygame.locals import K_ESCAPE, KEYDOWN, QUIT
 
-WIDTH = 800
-HEIGHT = 700
-SIZE = (WIDTH, HEIGHT)
-
-def print_text(text, font, text_colour, text_x, text_y):
-    image = font.render(text, True, text_colour)
-    screen.blit(image, (text_x, text_y))
-
-screen = pygame.display.set_mode(SIZE)
-clock = pygame.time.Clock()
-
-# Initialize global variables
-#________________________________________
 # background
 # background
 background = pygame.image.load("Untitled drawing.png")
@@ -43,18 +28,44 @@ rookPUP = pygame.transform.scale(rookPUP, (50, 50))
 laserPUP = pygame.image.load("laser_powerup.png")
 laserPUP = pygame.transform.scale(laserPUP, (70, 70))
 
+pygame.init()
+
+WIDTH = 800
+HEIGHT = 700
+SIZE = (WIDTH, HEIGHT)
+
 #font 
 text_font = pygame.font.SysFont(None, 40, bold = True)
 text_font_smaller = pygame.font.SysFont(None, 20, bold = True)
 
+def print_text(text, font, text_colour, text_x, text_y):
+    image = font.render(text, True, text_colour)
+    screen.blit(image, (text_x, text_y))
+
+# caption
+pygame.display.set_caption("Dethroned")
+
+screen = pygame.display.set_mode(SIZE)
+clock = pygame.time.Clock()
+
+# Initialize global variables
 
 #catherines code for the player
 player_x = WIDTH/2
 player_y = HEIGHT/2
-player_speed = 5 
-player_bullet = []
+player_speed = 5
+player_bullets = []
+bullet_speed = 10
 enemy_health = 100
+dummy_x = WIDTH/2
+dummy_y = HEIGHT/2
+bullet_life = 200
 death = False
+
+# points system
+points = 0
+bullet_hit = 10
+enemy_kill = 200
 
 #queen powerup location
 queenPUP_x = random.randrange(0, 800)
@@ -122,24 +133,6 @@ slots = [
 #chatgpt
 full_slots = [False] * len(slots)
 
-#Maggie variables for images in main menu
-circle_x = 200
-circle_y = 200
-pygame.font.get_default_font()
-scene_title_font = pygame.font.SysFont('Courier New', 45)
-current_screen = 0
-
-startx = 150
-starty = 120
-exitx = 403
-exity = 120
-settingx = 604
-settingy = 6
-
-mouse_x = 0
-mouse_y = 0
-clicked = False
-
 # Function to get the next available slot
 def get_next_available_slot():
     for i, occupied in enumerate(full_slots):
@@ -148,41 +141,35 @@ def get_next_available_slot():
             return slots[i]
     return None 
 
+# distance calculator
+def calc_dist(x1, y1, x2, y2):
+    a = y2 - y1
+    b = x2 - x1
+    return (a**2 + b**2)**0.5
+# ----------------
 # ---------------------------
 # Functions
 running = True
 while running:
+    mouse_x, mouse_y = pygame.mouse.get_pos()
+
+
     # EVENT HANDLING
     for event in pygame.event.get():
         if event.type == KEYDOWN:
             if event.key == K_ESCAPE:
                 running = False
-            elif event.key == K_RIGHT:
-                print("RIGHT ARROW PRESSED")
-                current_screen += 1
-                print(current_screen)
-            elif event.key == K_LEFT:
-                print("LEFT ARROW PRESSED")
-                current_screen -= 1
-                print(current_screen)
-        elif event.type == pygame.MOUSEBUTTONDOWN:
+        elif event.type == pygame.MOUSEBUTTONDOWN: # vectors for bullet
             click_x2, click_y2 = event.pos
-            life = 30
-            dx = (click_x2 - player_x)/5
-            dy = (-click_y2 + player_y)/5
-            bullet = [player_x, player_y, dx, dy, life]
-            player_bullet.append(bullet)
-        elif event.type == pygame.QUIT:
+            angle = math.atan2(mouse_y - player_y, mouse_x - player_x) # chatgpt
+            dx, dy = [bullet_speed * math.cos(angle), bullet_speed * math.sin(angle)] # chatgpt
+            player_bullets.append([player_x, player_y, dx, dy, bullet_life])
+        if event.type == pygame.QUIT:
             running = False
 
     # GAME STATE UPDATES
     # All game math and comparisons happen here
-    mouse_x, mouse_y = pygame.mouse.get_pos()
 
-    if event.type == MOUSEBUTTONDOWN:
-        mouse_x, mouse_y = event.pos
-        print(mouse_x, mouse_y)
-        
     # WASD movement
     #!! taken from mrgallo site
     keys = pygame.key.get_pressed()
@@ -198,26 +185,33 @@ while running:
     if keys[100] == True:  # d
         player_x += 10
 
-    # Catherine's bullet system
+    # Catherine's bullet & point system
 
-    for b in player_bullet:
+    for b in player_bullets:
         b[0] += b[2]
-        b[1] -= b[3] 
+        b[1] += b[3]
         b[4] -= 1
-        if b[0]>WIDTH/2-15 and b[0]<WIDTH/2+15 and b[1]>HEIGHT/2-15 and b[1]<HEIGHT/2+15:
+        
+    player_bullets_alive = []
+    for b in player_bullets:
+        if b[4] >= 0:
+            player_bullets_alive.append(b)
+        bullet_to_enemy_dist = calc_dist(b[0], b[1], dummy_x, dummy_y)
+        if bullet_to_enemy_dist <= 40:
             b[4] = -1
             enemy_health -= 10
-        
-    player_bullet_alive = []
-    for b in player_bullet:
-        if b[4] > 0:
-            player_bullet_alive.append(b)
-    player_bullet = player_bullet_alive
+            points += bullet_hit
+    player_bullets = player_bullets_alive
 
     if enemy_health <= 0:
         death = True
+        points += enemy_kill
 
-     
+    print(enemy_health)
+
+
+
+
     #coins being collected 
 
 # note: code will be added to store the coin in inventory
@@ -253,17 +247,26 @@ while running:
     screen.blit(white_player, (player_x, player_y))
     # dummy enemy
     if death == False:
-        pygame.draw.polygon(screen, (255, 0, 0), ((WIDTH/2-15, HEIGHT/2-15),(WIDTH/2+15, HEIGHT/2-15),(WIDTH/2+15, HEIGHT/2 + 15),(WIDTH/2-15, HEIGHT/2 + 15)))
+        pygame.draw.circle(screen, (255, 0, 0), (dummy_x, dummy_y), 25)
+    else:
+        dummy_x = 0
+        dummy_y = 0
 
 
     # bullet tragectory
     pygame.draw.line(screen, (0, 0, 255), (player_x, player_y), (mouse_x, mouse_y), 1)
 
     # bullet
-    for b in player_bullet:
+    for b in player_bullets:
         x = b[0]
         y = b[1]
         pygame.draw.circle(screen, (0, 0, 0), (x, y), 2)
+
+    for b in player_bullets:
+        pygame.draw.circle(screen, (0, 0, 0), (b[0], b[1]), 3)
+
+    # Points bar
+    print_text(f"{points}", text_font, (0,0,0), 10, 10)
 
 
     #inventory lower bar 
@@ -279,7 +282,7 @@ while running:
     #coin bar 
     pygame.draw.rect(screen, coin_bar_color, (WIDTH - coin_bar_width, 0, coin_bar_width, coin_bar_height))
     screen.blit(coin_image, (600,5))
-    print_text(f"$ {c_collected}", text_font, (0,0,0), 650, 18)
+    print_text(f"{c_collected}", text_font, (0,0,0), 650, 18)
 
     # Draw coins
     for c in coins:
@@ -313,61 +316,7 @@ while running:
     if laserPUP_x == 435 and laserPUP_y == 625:
         print_text(f"{laserPUP_counter}", text_font_smaller, (0,0,0), 490, 630)
     
-
-#MAIN MENU(Maggie)
-    chessboardImg = pygame.image.load('chessboard.jpg')
-    screen.blit(chessboardImg, (100,100))
-
-
-    screen.fill((123, 134, 150))  # always the first drawing command
-    pygame.draw.circle(screen, (255, 254, 245), (circle_x, circle_y), 30)
-
-    # Scene 1 (Menu screen) chessboard + title
-    if current_screen == 0:
-
-        chessboardImg = pygame.image.load('chessboard.jpg')
-        # smallchessboard = pygame.transform.scale(chessboardImg, (30,30))
-
-        screen.blit(chessboardImg, (2,-20))
-        scene_title = scene_title_font.render('Menu Screen', True, (219, 33, 98))
-        screen.blit(scene_title, (200, 0))
-
-        pygame.draw.rect(screen, (242, 177, 202), (102,74,179,180))
-        pygame.draw.rect(screen, (217, 87, 147), (364,74,179,180))
-
-        #Start Button
-        startImg = pygame.image.load('startbutton.png')
-        smallstart = pygame.transform.scale(startImg, (97,80))
-        screen.blit(smallstart, (startx, starty))
-        #Exit Button
-        ExitImg = pygame.image.load('exitbutton.png')
-        smallexit = pygame.transform.scale(ExitImg, (97,60))
-        screen.blit(smallexit, (exitx, exity))
-
-        SettingImg = pygame.image.load('settingsbutton.png')
-        smallsetting = pygame.transform.scale(SettingImg, (30,30))
-        screen.blit(smallsetting, (settingx, settingy))
-
-
-        #check if button clicked
-        if (mouse_x>=startx and mouse_x<=startx+100) and (mouse_y>=starty and mouse_y<=starty+50) and clicked == False:
-            
-            print("Start Button CLicked")
-            current_screen = 2
-            mouse_x = 0
-            mouse_y = 0
-        elif (mouse_x>=exitx and mouse_x<=exitx+100) and (mouse_y>=exity and mouse_y<=exity+50) and clicked == False:
-            print("Exit Button Clicked")
-            mouse_x = 0 
-            mouse_y = 0
-
-            break
-    # Scene 2 (Instructions screen)
-    elif current_screen == 1:
-
-        screen.fill((224, 202, 211)) 
-        scene_title = scene_title_font.render('Instructions Screen', True, (242, 17, 109))
-        screen.blit(scene_title, (90, 0))
+        
 
 
 
