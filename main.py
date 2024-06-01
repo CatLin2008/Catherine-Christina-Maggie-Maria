@@ -1,7 +1,7 @@
-import pygame
-import random 
+# pygame template
 
-from pygame.locals import K_ESCAPE, KEYDOWN, QUIT
+import pygame, sys, math, random
+from pygame.locals import K_ESCAPE, KEYDOWN, K_DOWN,QUIT
 
 # background
 background = pygame.image.load("Untitled drawing.png")
@@ -13,19 +13,19 @@ white_player = pygame.transform.scale(white_player, (player_width, player_height
 
 #queen power up image
 queenPUP = pygame.image.load("queen_powerup.png")
-queenPUP = pygame.transform.scale(queenPUP, (80, 80))
+queenPUP = pygame.transform.scale(queenPUP, (90, 90))
 
 #health power up image
-healthPUP = pygame.image.load("health_potion.png")
-healthPUP = pygame.transform.scale(healthPUP, (50, 50))
+healthPUP = pygame.image.load("healthpotion.png")
+healthPUP = pygame.transform.scale(healthPUP, (90, 90))
 
 #rook power up image
-rookPUP = pygame.image.load("rook_potion.png")
-rookPUP = pygame.transform.scale(rookPUP, (50, 50))
+rookPUP = pygame.image.load("yellowpotion.png")
+rookPUP = pygame.transform.scale(rookPUP, (90, 90))
 
 #laser power up image
-laserPUP = pygame.image.load("laser_powerup.png")
-laserPUP = pygame.transform.scale(laserPUP, (70, 70))
+laserPUP = pygame.image.load("bluepotion.png")
+laserPUP = pygame.transform.scale(laserPUP, (90, 90))
 
 pygame.init()
 
@@ -43,23 +43,28 @@ def print_text(text, font, text_colour, text_x, text_y):
 
 screen = pygame.display.set_mode(SIZE)
 clock = pygame.time.Clock()
- 
 
-# ---------------------------
 # Initialize global variables
 
 #catherines code for the player
-click = False
-player_speed = 5
-player_bullet_points = []
 player_x = WIDTH/2
 player_y = HEIGHT/2
+player_speed = 5
+player_bullets = []
+bullet_speed = 10
+enemy_health = 100
+dummy_x = WIDTH/2
+dummy_y = HEIGHT/2
+bullet_life = 200
+death = False
 
-
-
+# points system
+points = 0
+bullet_hit = 10
+enemy_kill = 200
 #queen powerup location
 queenPUP_x = random.randrange(0, 800)
-queenPUP_y = random.randrange(0,700)
+queenPUP_y = random.randrange(0,500)
 queenPUP_list = [
     pygame.Rect(queenPUP_x, queenPUP_y, 2, 5)
 ]
@@ -89,6 +94,7 @@ rookPUP_list = [
 ]
 rookPUP_counter = 0
 
+
 coin_image = pygame.image.load('coin.png')
 coin_image = pygame.transform.scale(coin_image, (45, 50))
 coins = [
@@ -109,30 +115,41 @@ slot_measurements = 65
 slot_colour = (196, 164, 132)
 slot_x = 120
 
-#locations of the slots
-slots = [
-    (190, 620),  #1
-    (285, 640),  #2
-    (370, 640),  #3
-    (435, 625),  #4
-    (slot_x + 320, 630),  #5
-    (slot_x + 400, 630),  #6
-    (slot_x + 480, 630),  #7
+#store 
+store_width = 800
+store_height = 700
+store_colour = (0, 0, 128)
+coin_colour = (128, 128, 128)
+purchase_slots_width = 150
+purchase_slots_height = 250 
+og_purchase_x = 25
+og_purchase_y = 200
 
+store_open = False
+e_key_pressed = False
+
+
+#locations of the slots, testing it for now 
+slots = [
+    (110, 620),
+    (190, 620), 
+    (280, 620), 
+    (360, 620), 
+    (440, 620), 
+    (520, 620),
+    (600, 620)
 ]
 
-#chatgpt
-full_slots = [False] * len(slots)
+# distance calculator
+def calc_dist(x1, y1, x2, y2):
+    a = y2 - y1
+    b = x2 - x1
+    return (a**2 + b**2)**0.5
 
-# Function to get the next available slot
-def get_next_available_slot():
-    for i, occupied in enumerate(full_slots):
-        if not occupied:
-            full_slots[i] = True
-            return slots[i]
-    return None 
+
+# ----------------
 # ---------------------------
-
+# Functions
 running = True
 while running:
     # EVENT HANDLING
@@ -140,15 +157,11 @@ while running:
         if event.type == KEYDOWN:
             if event.key == K_ESCAPE:
                 running = False
-        if event.type == pygame.QUIT:
-            running = False
-        elif event.type == pygame.MOUSEBUTTONDOWN:
+        elif event.type == pygame.MOUSEBUTTONDOWN: # vectors for bullet
             click_x2, click_y2 = event.pos
-            life = 30
-            dx = (click_x2 - player_x)/5
-            dy = (-click_y2 + player_y)/5
-            bullet = [player_x, player_y, dx, dy, life]
-            player_bullet_points.append(bullet)
+            angle = math.atan2(mouse_y - player_y, mouse_x - player_x) # chatgpt
+            dx, dy = [bullet_speed * math.cos(angle), bullet_speed * math.sin(angle)] # chatgpt
+            player_bullets.append([player_x, player_y, dx, dy, bullet_life])
         if event.type == pygame.QUIT:
             running = False
 
@@ -157,23 +170,7 @@ while running:
     # All game math and comparisons happen here
     mouse_x, mouse_y = pygame.mouse.get_pos()
 
-    #code for the bullets 
-    for b in player_bullet_points:
-        b[0] += b[2]
-        b[1] -= b[3] 
-        b[4] -= 1
-        if b[0]>WIDTH/2-15 and b[0]<WIDTH/2+15 and b[1]>HEIGHT/2-15 and b[1]<HEIGHT/2+15:
-            b[4] = -1
-        
-
-    #code determining alive or not 
-    alive = []
-    for b in player_bullet_points:
-        if b[4] > 0:
-            alive.append(b)
-    player_bullet_points = alive
-        
-
+    # WASD movement
     #!! taken from mrgallo site
     keys = pygame.key.get_pressed()
     if keys[119] == True:  # w
@@ -188,6 +185,41 @@ while running:
     if keys[100] == True:  # d
         player_x += 10
     
+    #adding a key press on E to open the store
+    if keys[101]:  
+        if not e_key_pressed:
+            store_open = not store_open
+            e_key_pressed = True
+    else:
+        e_key_pressed = False
+    # Catherine's bullet system
+
+    for b in player_bullets:
+        b[0] += b[2]
+        b[1] -= b[3] 
+        b[4] -= 1
+        if b[0]>WIDTH/2-15 and b[0]<WIDTH/2+15 and b[1]>HEIGHT/2-15 and b[1]<HEIGHT/2+15:
+            b[4] = -1
+            enemy_health -= 10
+        
+    player_bullets_alive = []
+    for b in player_bullets:
+        if b[4] >= 0:
+            player_bullets_alive.append(b)
+        bullet_to_enemy_dist = calc_dist(b[0], b[1], dummy_x, dummy_y)
+        if bullet_to_enemy_dist <= 40:
+            b[4] = -1
+            enemy_health -= 10
+            points += bullet_hit
+    player_bullets = player_bullets_alive
+
+    if enemy_health <= 0:
+        death = True
+        points += enemy_kill
+
+    print(enemy_health)
+
+     
     #coins being collected 
 
 # note: code will be added to store the coin in inventory
@@ -198,58 +230,65 @@ while running:
             coins.remove(c)
             c_collected += 1
 
-#defining what a powerup should do when colliding with the player
+    #defining what a powerup should do when colliding the player
     def handle_powerup_collision(powerup_x, powerup_y, counter):
         if pygame.Rect(powerup_x, powerup_y, 80, 80).colliderect(player_rect):
-            new_slot = get_next_available_slot()
+            new_slot = slots[0]
+            slots.pop(0)
             if new_slot:
-                powerup_x, powerup_y = new_slot
                 counter += 1
-        return powerup_x, powerup_y, counter
+                powerup_x, powerup_y = new_slot
 
+        return powerup_x, powerup_y, counter
+    
     queenPUP_x, queenPUP_y, queenPUP_counter = handle_powerup_collision(queenPUP_x, queenPUP_y, queenPUP_counter)
     healthPUP_x, healthPUP_y, healthPUP_counter = handle_powerup_collision(healthPUP_x, healthPUP_y, healthPUP_counter)
     rookPUP_x, rookPUP_y, rookPUP_counter = handle_powerup_collision(rookPUP_x, rookPUP_y, rookPUP_counter)
     laserPUP_x, laserPUP_y, laserPUP_counter = handle_powerup_collision(laserPUP_x, laserPUP_y, laserPUP_counter)
+    # DRAWING
 
- 
+    # background
     screen.fill((255, 255, 255))  # always the first drawing command
 
     # background image
     screen.blit(background, (0,0))
 
-
     # draw the pawn image
-
     screen.blit(white_player, (player_x, player_y))
+     # dummy enemy
+    if death == False:
+        pygame.draw.circle(screen, (255, 0, 0), (dummy_x, dummy_y), 25)
+    else:
+        dummy_x = 0
+        dummy_y = 0
 
-     # bullet tragectory
+
+    # bullet tragectory
     pygame.draw.line(screen, (0, 0, 255), (player_x, player_y), (mouse_x, mouse_y), 1)
 
     # bullet
-    for b in player_bullet_points:
+    for b in player_bullets:
         x = b[0]
         y = b[1]
         pygame.draw.circle(screen, (0, 0, 0), (x, y), 2)
 
+    for b in player_bullets:
+        pygame.draw.circle(screen, (0, 0, 0), (b[0], b[1]), 3)
+
+    # Points bar
+    print_text(f"{points}", text_font, (0,0,0), 10, 10)
+
+
+
     #inventory lower bar 
     pygame.draw.rect(screen, inventory_bar_colour, (100, 620, inventory_bar_width, inventory_bar_height))
-    pygame.draw.rect(screen, slot_colour, (slot_x, 630, slot_measurements, slot_measurements))
-    pygame.draw.rect(screen, slot_colour, (slot_x+80, 630, slot_measurements, slot_measurements))
-    pygame.draw.rect(screen, slot_colour, (slot_x+160, 630, slot_measurements, slot_measurements))
-    pygame.draw.rect(screen, slot_colour, (slot_x+240, 630, slot_measurements, slot_measurements))
-    pygame.draw.rect(screen, slot_colour, (slot_x+320, 630, slot_measurements, slot_measurements))
-    pygame.draw.rect(screen, slot_colour, (slot_x+400, 630, slot_measurements, slot_measurements))
-    pygame.draw.rect(screen, slot_colour, (slot_x+480, 630, slot_measurements, slot_measurements))
+    for i in range(7):
+        pygame.draw.rect(screen, slot_colour, (slot_x + 80 * i, 630, slot_measurements, slot_measurements))
 
-    #dummy enemy
-    pygame.draw.polygon(screen, (255, 0, 0), ((WIDTH/2-15, HEIGHT/2-15),(WIDTH/2+15, HEIGHT/2-15),(WIDTH/2+15, HEIGHT/2 + 15),(WIDTH/2-15, HEIGHT/2 + 15)))
-    
     #coin bar 
     pygame.draw.rect(screen, coin_bar_color, (WIDTH - coin_bar_width, 0, coin_bar_width, coin_bar_height))
     screen.blit(coin_image, (600,5))
     print_text(f"$ {c_collected}", text_font, (0,0,0), 650, 18)
-
 
     # Draw coins
     for c in coins:
@@ -271,25 +310,46 @@ while running:
         screen.blit(rookPUP, (rookPUP_x, rookPUP_y))
 
 #coding for numbering how many powerups you pick uo 
-    if queenPUP_x == 190 and queenPUP_y == 620:
-        print_text(f"{queenPUP_counter}", text_font_smaller, (0,0,0), queenPUP_x + 50, 630)
-    
-    if rookPUP_x == 285 and rookPUP_y == 640:
-        print_text(f"{rookPUP_counter}", text_font_smaller, (0,0,0), 330, 630)
-    
-    if healthPUP_x == 370 and healthPUP_y == 640:
-        print_text(f"{healthPUP_counter}", text_font_smaller, (0,0,0), 410, 630)
 
-    if laserPUP_x == 435 and laserPUP_y == 625:
-        print_text(f"{laserPUP_counter}", text_font_smaller, (0,0,0), 490, 630)
+    for slot in slots: 
+        if (queenPUP_x, queenPUP_y) == slot:
+            print_text(f"{queenPUP_counter}", text_font_smaller, (0,0,0), queenPUP_x + 55, queenPUP_y +8)
+        if (rookPUP_x, rookPUP_y) == slot:
+            print_text(f"{rookPUP_counter}", text_font_smaller, (0,0,0), rookPUP_x + 55, rookPUP_y +8)
+        if(healthPUP_x, healthPUP_y) == slot:
+            print_text(f"{healthPUP_counter}", text_font_smaller, (0,0,0), healthPUP_x + 55, healthPUP_y +8)
+        if (laserPUP_x, laserPUP_y) == slot:
+         print_text(f"{laserPUP_counter}", text_font_smaller, (0,0,0), laserPUP_x +55, laserPUP_y + 8)
     
 
+#drawing the store and what they can purchase by pressing E
+    if store_open:
+        pygame.draw.rect(screen, store_colour, ((WIDTH - store_width) / 2, (HEIGHT - store_height) / 2, store_width, store_height))
+        pygame.draw.rect(screen, coin_colour, (290, 600, 200, 50))
+        print_text(f"Coins: {c_collected}", text_font, (0, 0, 0), 335,610)
+        #queen buy
+        pygame.draw.rect(screen, (200,200,200), (og_purchase_x, og_purchase_y, purchase_slots_width, purchase_slots_height))
+        screen.blit(queenPUP, (og_purchase_x + 30, og_purchase_y+ 80))
+        print_text(f"Queen Power Up", text_font_smaller, (0, 0, 0), og_purchase_x+25, og_purchase_y)
+        #laser pup buy
+        pygame.draw.rect(screen, (200,200,200), (og_purchase_x+ 200, og_purchase_y, purchase_slots_width, purchase_slots_height))
+        screen.blit(laserPUP, (og_purchase_x + 230, og_purchase_y+ 80))
+        print_text(f"Laser Power Up", text_font_smaller, (0, 0, 0), og_purchase_x+225, og_purchase_y)
+        #rook pup buy
+        pygame.draw.rect(screen, (200,200,200), (og_purchase_x+ 400, og_purchase_y, purchase_slots_width, purchase_slots_height))
+        screen.blit(rookPUP, (og_purchase_x + 430, og_purchase_y+ 80))
+        print_text(f"Rook Power Up", text_font_smaller, (0, 0, 0), og_purchase_x+425, og_purchase_y)
+        #health pup buy
+        pygame.draw.rect(screen, (200,200,200), (og_purchase_x+ 600, og_purchase_y, purchase_slots_width, purchase_slots_height))
+        screen.blit(healthPUP, (og_purchase_x + 630, og_purchase_y+ 80))
+        print_text(f"Health Power Up", text_font_smaller, (0, 0, 0), og_purchase_x+625, og_purchase_y)
 
-        
+
+
     # Must be the last two lines
     # of the game loop
     pygame.display.flip()
-    clock.tick(30)
+    clock.tick(60)
     #---------------------------
 
 
