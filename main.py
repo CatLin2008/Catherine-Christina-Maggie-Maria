@@ -130,6 +130,18 @@ slots = [
 ]
 
 
+#store 
+store_width = 800
+store_height = 700
+store_colour = (0, 0, 128)
+coin_colour = (128, 128, 128)
+purchase_slots_width = 150
+purchase_slots_height = 250 
+og_purchase_x = 25
+og_purchase_y = 200
+
+store_open = False
+e_key_pressed = False
 # distance calculator
 def calc_dist(x1, y1, x2, y2):
     a = y2 - y1
@@ -173,6 +185,14 @@ while running:
 
     if keys[100] == True:  # d
         player_x += 10
+
+     #adding a key press on E to open the store
+    if keys[101]:  
+        if not e_key_pressed:
+            store_open = not store_open
+            e_key_pressed = True
+    else:
+        e_key_pressed = False
 
     # Catherine's bullet & point system
 
@@ -306,8 +326,29 @@ while running:
         if (laserPUP_x, laserPUP_y) == slot:
          print_text(f"{laserPUP_counter}", text_font_smaller, (0,0,0), laserPUP_x +55, laserPUP_y + 8)
     
-        
-        
+
+#drawing the store and what they can purchase by pressing E
+    if store_open:
+        pygame.draw.rect(screen, store_colour, ((WIDTH - store_width) / 2, (HEIGHT - store_height) / 2, store_width, store_height))
+        pygame.draw.rect(screen, coin_colour, (290, 600, 200, 50))
+        print_text(f"Coins: {c_collected}", text_font, (0, 0, 0), 335,610)
+        #queen buy
+        pygame.draw.rect(screen, (200,200,200), (og_purchase_x, og_purchase_y, purchase_slots_width, purchase_slots_height))
+        screen.blit(queenPUP, (og_purchase_x + 30, og_purchase_y+ 80))
+        print_text(f"Queen Power Up", text_font_smaller, (0, 0, 0), og_purchase_x+25, og_purchase_y)
+        #laser pup buy
+        pygame.draw.rect(screen, (200,200,200), (og_purchase_x+ 200, og_purchase_y, purchase_slots_width, purchase_slots_height))
+        screen.blit(laserPUP, (og_purchase_x + 230, og_purchase_y+ 80))
+        print_text(f"Laser Power Up", text_font_smaller, (0, 0, 0), og_purchase_x+225, og_purchase_y)
+        #rook pup buy
+        pygame.draw.rect(screen, (200,200,200), (og_purchase_x+ 400, og_purchase_y, purchase_slots_width, purchase_slots_height))
+        screen.blit(rookPUP, (og_purchase_x + 430, og_purchase_y+ 80))
+        print_text(f"Rook Power Up", text_font_smaller, (0, 0, 0), og_purchase_x+425, og_purchase_y)
+        #health pup buy
+        pygame.draw.rect(screen, (200,200,200), (og_purchase_x+ 600, og_purchase_y, purchase_slots_width, purchase_slots_height))
+        screen.blit(healthPUP, (og_purchase_x + 630, og_purchase_y+ 80))
+        print_text(f"Health Power Up", text_font_smaller, (0, 0, 0), og_purchase_x+625, og_purchase_y)
+
 
 
 
