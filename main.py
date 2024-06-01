@@ -11,22 +11,21 @@ player_width = 60
 player_height = 115
 white_player = pygame.transform.scale(white_player, (player_width, player_height))
 
-
 #queen power up image
 queenPUP = pygame.image.load("queen_powerup.png")
-queenPUP = pygame.transform.scale(queenPUP, (80, 80))
+queenPUP = pygame.transform.scale(queenPUP, (90, 90))
 
 #health power up image
-healthPUP = pygame.image.load("health_potion.png")
-healthPUP = pygame.transform.scale(healthPUP, (50, 50))
+healthPUP = pygame.image.load("healthpotion.png")
+healthPUP = pygame.transform.scale(healthPUP, (90, 90))
 
 #rook power up image
-rookPUP = pygame.image.load("rook_potion.png")
-rookPUP = pygame.transform.scale(rookPUP, (50, 50))
+rookPUP = pygame.image.load("yellowpotion.png")
+rookPUP = pygame.transform.scale(rookPUP, (90, 90))
 
 #laser power up image
-laserPUP = pygame.image.load("laser_powerup.png")
-laserPUP = pygame.transform.scale(laserPUP, (70, 70))
+laserPUP = pygame.image.load("bluepotion.png")
+laserPUP = pygame.transform.scale(laserPUP, (90, 90))
 
 pygame.init()
 
@@ -119,27 +118,17 @@ slot_measurements = 65
 slot_colour = (196, 164, 132)
 slot_x = 120
 
-#locations of the slots, testing it for now 
+#locations of the slots
 slots = [
-    (190, 620),  #1
-    (285, 640),  #2
-    (370, 640),  #3
-    (435, 625),  #4
-    (slot_x + 320, 630),  #5
-    (slot_x + 400, 630),  #6
-    (slot_x + 480, 630),  #7
-
+    (110, 620),
+    (190, 620), 
+    (280, 620), 
+    (360, 620), 
+    (430, 620), 
+    (500, 620),
+    (570, 620)
 ]
-#chatgpt
-full_slots = [False] * len(slots)
 
-# Function to get the next available slot
-def get_next_available_slot():
-    for i, occupied in enumerate(full_slots):
-        if not occupied:
-            full_slots[i] = True
-            return slots[i]
-    return None 
 
 # distance calculator
 def calc_dist(x1, y1, x2, y2):
@@ -225,10 +214,12 @@ while running:
 #defining what a powerup should do when colliding the player
     def handle_powerup_collision(powerup_x, powerup_y, counter):
         if pygame.Rect(powerup_x, powerup_y, 80, 80).colliderect(player_rect):
-            new_slot = get_next_available_slot()
+            new_slot = slots[0]
+            slots.pop(0)
             if new_slot:
-                powerup_x, powerup_y = new_slot
                 counter += 1
+                powerup_x, powerup_y = new_slot
+
         return powerup_x, powerup_y, counter
 
     queenPUP_x, queenPUP_y, queenPUP_counter = handle_powerup_collision(queenPUP_x, queenPUP_y, queenPUP_counter)
@@ -304,18 +295,18 @@ while running:
         screen.blit(rookPUP, (rookPUP_x, rookPUP_y))
 
 #coding for numbering how many powerups you pick uo 
-    if queenPUP_x == 190 and queenPUP_y == 620:
-        print_text(f"{queenPUP_counter}", text_font_smaller, (0,0,0), 250, 630)
-    
-    if rookPUP_x == 285 and rookPUP_y == 640:
-        print_text(f"{rookPUP_counter}", text_font_smaller, (0,0,0), 330, 630)
-    
-    if healthPUP_x == 370 and healthPUP_y == 640:
-        print_text(f"{healthPUP_counter}", text_font_smaller, (0,0,0), 410, 630)
 
-    if laserPUP_x == 435 and laserPUP_y == 625:
-        print_text(f"{laserPUP_counter}", text_font_smaller, (0,0,0), 490, 630)
+    for slot in slots: 
+        if (queenPUP_x, queenPUP_y) == slot:
+            print_text(f"{queenPUP_counter}", text_font_smaller, (0,0,0), queenPUP_x + 55, queenPUP_y +8)
+        if (rookPUP_x, rookPUP_y) == slot:
+            print_text(f"{rookPUP_counter}", text_font_smaller, (0,0,0), rookPUP_x + 55, rookPUP_y +8)
+        if(healthPUP_x, healthPUP_y) == slot:
+            print_text(f"{healthPUP_counter}", text_font_smaller, (0,0,0), healthPUP_x + 55, healthPUP_y +8)
+        if (laserPUP_x, laserPUP_y) == slot:
+         print_text(f"{laserPUP_counter}", text_font_smaller, (0,0,0), laserPUP_x +55, laserPUP_y + 8)
     
+        
         
 
 
