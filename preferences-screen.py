@@ -85,10 +85,11 @@ while running:
                     selected_option = "volume_sfx"
                 elif 300 < y < 350:
                     selected_option = "volume_music"
-        elif event.type == pygame.KEYDOWN and selected_option is not None:
+        elif event.type == pygame.KEYDOWN:
             if selected_option == "game_mode":
-                current_mode_index = game_modes.index(settings['game_mode'])
-                settings['game_mode'] = game_modes[(current_mode_index + 1) % len(game_modes)]
+                if event.key in [pygame.K_LEFT, pygame.K_RIGHT]:
+                    current_mode_index = game_modes.index(settings['game_mode'])
+                    settings['game_mode'] = game_modes[(current_mode_index + 1) % len(game_modes)]
             elif selected_option == "volume_sfx":
                 if event.key == pygame.K_UP and settings['volume']['sfx'] < 100:
                     settings['volume']['sfx'] += 10
@@ -99,7 +100,6 @@ while running:
                     settings['volume']['music'] += 10
                 elif event.key == pygame.K_DOWN and settings['volume']['music'] > 0:
                     settings['volume']['music'] -= 10
-            selected_option = None
             save_settings(settings)
 
     screen.fill(tan)
