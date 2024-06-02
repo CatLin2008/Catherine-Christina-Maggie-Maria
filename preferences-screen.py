@@ -13,6 +13,7 @@ clock = pygame.time.Clock()
 font = pygame.font.SysFont('Fira Sans Extra Condensed', 50)
 dark_brown = 139, 69, 19
 tan = 210, 180, 140
+black = 0, 0, 0
 
 # Initial settings
 settings = {
@@ -47,13 +48,19 @@ def text(text, x, y, color=dark_brown):
     rendered_text = font.render(text, True, color)
     screen.blit(rendered_text, (x, y))
 
-def display(screen, settings):
+def display(screen, settings, selected_option):
     screen.fill(tan)
     text("PREFERENCES", WIDTH / 3, HEIGHT / 8)
-    text(f"Game Mode: {settings['game_mode']}", 20, 150)
+    
+    game_mode_color = black if selected_option == "game_mode" else dark_brown
+    text(f"Game Mode: {settings['game_mode']}", 20, 150, game_mode_color)
+    
+    volume_sfx_color = black if selected_option == "volume_sfx" else dark_brown
+    volume_music_color = black if selected_option == "volume_music" else dark_brown
     text("Volume Settings:", 20, 200)
-    text(f"  SFX: {settings['volume']['sfx']}", 40, 250)
-    text(f"  Music: {settings['volume']['music']}", 40, 300)
+    text(f"  SFX: {settings['volume']['sfx']}", 40, 250, volume_sfx_color)
+    text(f"  Music: {settings['volume']['music']}", 40, 300, volume_music_color)
+    
     text("Keybinds:", 20, 350)
     y_offset = 400
     for action, key in settings['keybinds'].items():
@@ -96,7 +103,7 @@ while running:
             save_settings(settings)
 
     screen.fill(tan)
-    display(screen, settings)
+    display(screen, settings, selected_option)
     pygame.display.flip()
     clock.tick(30)
 
