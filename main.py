@@ -67,32 +67,32 @@ bullet_hit = 10
 enemy_kill = 200
 
 #queen powerup location
-queenPUP_x = random.randrange(0, 800)
-queenPUP_y = random.randrange(0,700)
+queenPUP_x = random.randrange(0, 750)
+queenPUP_y = random.randrange(60, 500)
 queenPUP_list = [
     pygame.Rect(queenPUP_x, queenPUP_y, 2, 5)
 ]
 queenPUP_counter = 0
 
 #health powerup location
-healthPUP_x = 70
-healthPUP_y = 60
+healthPUP_x = random.randrange(0, 800)
+healthPUP_y = random.randrange(60, 500)
 healthPUP_list = [
     pygame.Rect(healthPUP_x, healthPUP_y, 2, 5)
 ]
 healthPUP_counter = 0
 
 #laser powerup location
-laserPUP_x = 150
-laserPUP_y = 150
+laserPUP_x = random.randrange(0, 800)
+laserPUP_y = random.randrange(60, 500)
 laserPUP_list = [
     pygame.Rect(laserPUP_x, laserPUP_y, 2, 5)
 ]
 laserPUP_counter = 0
 
 #rook powerup location
-rookPUP_x = 100
-rookPUP_y = 100
+rookPUP_x = random.randrange(0, 800)
+rookPUP_y = random.randrange(60, 500)
 rookPUP_list = [
     pygame.Rect(rookPUP_x, rookPUP_y, 2, 5)
 ]
@@ -133,12 +133,16 @@ slots = [
 #store 
 store_width = 800
 store_height = 700
-store_colour = (0, 0, 128)
-coin_colour = (128, 128, 128)
+store_colour = (92, 64, 51)
+coin_colour = (196, 164, 132)
 purchase_slots_width = 150
 purchase_slots_height = 250 
 og_purchase_x = 25
 og_purchase_y = 200
+laser_price = 10
+queenPUP_price = 30
+rookPUP_price = 20 
+healthPUP_price = 20
 
 store_open = False
 e_key_pressed = False
@@ -147,6 +151,13 @@ def calc_dist(x1, y1, x2, y2):
     a = y2 - y1
     b = x2 - x1
     return (a**2 + b**2)**0.5
+
+#locations for the powerups within the store for later purchases used
+queen_in_store = pygame.Rect(og_purchase_x, og_purchase_y, purchase_slots_width, purchase_slots_height)
+laser_in_store = pygame.Rect(225, og_purchase_y, purchase_slots_width, purchase_slots_height)
+rookPUP_in_store = pygame.Rect(425, og_purchase_y, purchase_slots_width, purchase_slots_height)
+health_in_store = pygame.Rect(625, og_purchase_y, purchase_slots_width, purchase_slots_height)
+
 # ----------------
 # ---------------------------
 # Functions
@@ -165,6 +176,19 @@ while running:
             angle = math.atan2(mouse_y - player_y, mouse_x - player_x) # chatgpt
             dx, dy = [bullet_speed * math.cos(angle), bullet_speed * math.sin(angle)] # chatgpt
             player_bullets.append([player_x, player_y, dx, dy, bullet_life])
+            if store_open: #code for purchasing the powerups in the store
+                if queen_in_store.collidepoint(event.pos): 
+                    if c_collected > queenPUP_price:
+                        c_collected -=queenPUP_price
+                if laser_in_store.collidepoint(event.pos): 
+                    if c_collected > laser_price:
+                        c_collected -= laser_price
+                if rookPUP_in_store.collidepoint(event.pos): 
+                    if c_collected > rookPUP_price:
+                        c_collected -= rookPUP_price
+                if health_in_store.collidepoint(event.pos): 
+                    if c_collected > healthPUP_price:
+                            c_collected -= healthPUP_price
         if event.type == pygame.QUIT:
             running = False
 
@@ -242,10 +266,14 @@ while running:
 
         return powerup_x, powerup_y, counter
 
-    queenPUP_x, queenPUP_y, queenPUP_counter = handle_powerup_collision(queenPUP_x, queenPUP_y, queenPUP_counter)
-    healthPUP_x, healthPUP_y, healthPUP_counter = handle_powerup_collision(healthPUP_x, healthPUP_y, healthPUP_counter)
-    rookPUP_x, rookPUP_y, rookPUP_counter = handle_powerup_collision(rookPUP_x, rookPUP_y, rookPUP_counter)
-    laserPUP_x, laserPUP_y, laserPUP_counter = handle_powerup_collision(laserPUP_x, laserPUP_y, laserPUP_counter)
+    if queenPUP_y <= 600:
+        queenPUP_x, queenPUP_y, queenPUP_counter = handle_powerup_collision(queenPUP_x, queenPUP_y, queenPUP_counter)
+    if healthPUP_y <= 600:
+        healthPUP_x, healthPUP_y, healthPUP_counter = handle_powerup_collision(healthPUP_x, healthPUP_y, healthPUP_counter)
+    if rookPUP_y <= 600:
+        rookPUP_x, rookPUP_y, rookPUP_counter = handle_powerup_collision(rookPUP_x, rookPUP_y, rookPUP_counter)
+    if laserPUP_y <= 600:
+        laserPUP_x, laserPUP_y, laserPUP_counter = handle_powerup_collision(laserPUP_x, laserPUP_y, laserPUP_counter)
     # DRAWING
 
     # background
@@ -290,7 +318,7 @@ while running:
     pygame.draw.rect(screen, slot_colour, (slot_x+400, 630, slot_measurements, slot_measurements))
     pygame.draw.rect(screen, slot_colour, (slot_x+480, 630, slot_measurements, slot_measurements))
 
-    #coin bar 
+     #coin bar 
     pygame.draw.rect(screen, coin_bar_color, (WIDTH - coin_bar_width, 0, coin_bar_width, coin_bar_height))
     screen.blit(coin_image, (600,5))
     print_text(f"{c_collected}", text_font, (0,0,0), 650, 18)
@@ -330,25 +358,36 @@ while running:
 #drawing the store and what they can purchase by pressing E
     if store_open:
         pygame.draw.rect(screen, store_colour, ((WIDTH - store_width) / 2, (HEIGHT - store_height) / 2, store_width, store_height))
-        pygame.draw.rect(screen, coin_colour, (290, 600, 200, 50))
+        pygame.draw.rect(screen, coin_colour, (300, 600, 200, 50))
         print_text(f"Coins: {c_collected}", text_font, (0, 0, 0), 335,610)
         #queen buy
-        pygame.draw.rect(screen, (200,200,200), (og_purchase_x, og_purchase_y, purchase_slots_width, purchase_slots_height))
+        pygame.draw.rect(screen, (coin_colour), (og_purchase_x, og_purchase_y, purchase_slots_width, purchase_slots_height))
         screen.blit(queenPUP, (og_purchase_x + 30, og_purchase_y+ 80))
         print_text(f"Queen Power Up", text_font_smaller, (0, 0, 0), og_purchase_x+25, og_purchase_y)
+        screen.blit(coin_image, (og_purchase_x + 15, og_purchase_y+ +200))
+        print_text(f"{queenPUP_price}", text_font, (0, 0, 0), og_purchase_x+70, og_purchase_y+210)
+
         #laser pup buy
-        pygame.draw.rect(screen, (200,200,200), (og_purchase_x+ 200, og_purchase_y, purchase_slots_width, purchase_slots_height))
+        pygame.draw.rect(screen, (coin_colour), (og_purchase_x+ 200, og_purchase_y, purchase_slots_width, purchase_slots_height))
         screen.blit(laserPUP, (og_purchase_x + 230, og_purchase_y+ 80))
-        print_text(f"Laser Power Up", text_font_smaller, (0, 0, 0), og_purchase_x+225, og_purchase_y)
+        print_text(f"Laser Power Up", text_font_smaller, (0, 0, 0), og_purchase_x+230, og_purchase_y)
+        screen.blit(coin_image, (og_purchase_x + 210, og_purchase_y+ +200))
+        print_text(f"{laser_price}", text_font, (0, 0, 0), og_purchase_x+265, og_purchase_y+210)
+
+
         #rook pup buy
-        pygame.draw.rect(screen, (200,200,200), (og_purchase_x+ 400, og_purchase_y, purchase_slots_width, purchase_slots_height))
+        pygame.draw.rect(screen, (coin_colour), (og_purchase_x+ 400, og_purchase_y, purchase_slots_width, purchase_slots_height))
         screen.blit(rookPUP, (og_purchase_x + 430, og_purchase_y+ 80))
         print_text(f"Rook Power Up", text_font_smaller, (0, 0, 0), og_purchase_x+425, og_purchase_y)
+        screen.blit(coin_image, (og_purchase_x + 415, og_purchase_y+ +200))
+        print_text(f"{rookPUP_price}", text_font, (0, 0, 0), og_purchase_x+470, og_purchase_y+210)
+        
         #health pup buy
-        pygame.draw.rect(screen, (200,200,200), (og_purchase_x+ 600, og_purchase_y, purchase_slots_width, purchase_slots_height))
+        pygame.draw.rect(screen, (coin_colour), (og_purchase_x+ 600, og_purchase_y, purchase_slots_width, purchase_slots_height))
         screen.blit(healthPUP, (og_purchase_x + 630, og_purchase_y+ 80))
         print_text(f"Health Power Up", text_font_smaller, (0, 0, 0), og_purchase_x+625, og_purchase_y)
-
+        screen.blit(coin_image, (og_purchase_x + 615, og_purchase_y+ +200))
+        print_text(f"{healthPUP_price}", text_font, (0, 0, 0), og_purchase_x+665, og_purchase_y+210)
 
 
 
