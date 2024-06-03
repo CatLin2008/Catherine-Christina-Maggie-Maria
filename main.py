@@ -10,22 +10,22 @@ white_player = pygame.image.load("white-chess-piece.png")
 player_width = 60
 player_height = 115
 white_player = pygame.transform.scale(white_player, (player_width, player_height))
-
 #queen power up image
 queenPUP = pygame.image.load("queen_powerup.png")
 queenPUP = pygame.transform.scale(queenPUP, (90, 90))
 
 #health power up image
-healthPUP = pygame.image.load("healthpotion.png")
+healthPUP = pygame.image.load("heartpup.png")
 healthPUP = pygame.transform.scale(healthPUP, (90, 90))
 
 #rook power up image
-rookPUP = pygame.image.load("yellowpotion.png")
+rookPUP = pygame.image.load("rookpup.png")
 rookPUP = pygame.transform.scale(rookPUP, (90, 90))
 
 #laser power up image
-laserPUP = pygame.image.load("bluepotion.png")
+laserPUP = pygame.image.load("laserpup.png")
 laserPUP = pygame.transform.scale(laserPUP, (90, 90))
+
 
 pygame.init()
 
