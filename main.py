@@ -54,13 +54,16 @@ clock = pygame.time.Clock()
 player_x = WIDTH/2
 player_y = HEIGHT/2
 player_speed = 5
+
 player_bullets = []
 bullet_speed = 10
-enemy_health = 100
-dummy_x = WIDTH/2
-dummy_y = HEIGHT/2
 bullet_life = 200
-death = False
+
+enemies = []
+enemy_health = 100
+enemy_speed = 3
+b_x = 0
+b_y = 0
 
 # points system
 points = 0
@@ -146,13 +149,21 @@ def calc_dist(x1, y1, x2, y2):
     a = y2 - y1
     b = x2 - x1
     return (a**2 + b**2)**0.5
+
+# vectors calculator
+def calc_angle(x1, y1, x2, y2):
+    return math.atan2(y2 - y1, x2 - x1) # chat gpt
+
+def calc_velocity(speed, angle):
+    dx, dy = [speed * math.cos(angle), speed * math.sin(angle)]
+    return dx, dy
+
 # ----------------
 # ---------------------------
 # Functions
 running = True
 while running:
     mouse_x, mouse_y = pygame.mouse.get_pos()
-
 
     # EVENT HANDLING
     for event in pygame.event.get():
@@ -161,8 +172,8 @@ while running:
                 running = False
         elif event.type == pygame.MOUSEBUTTONDOWN: # vectors for bullet
             click_x2, click_y2 = event.pos
-            angle = math.atan2(mouse_y - player_y, mouse_x - player_x) # chatgpt
-            dx, dy = [bullet_speed * math.cos(angle), bullet_speed * math.sin(angle)] # chatgpt
+            angle = calc_angle(player_x, player_y, mouse_x, mouse_y)
+            dx, dy = calc_velocity(bullet_speed, angle)
             player_bullets.append([player_x, player_y, dx, dy, bullet_life])
         if event.type == pygame.QUIT:
             running = False
@@ -196,18 +207,37 @@ while running:
     for b in player_bullets:
         if b[4] >= 0:
             player_bullets_alive.append(b)
-        bullet_to_enemy_dist = calc_dist(b[0], b[1], dummy_x, dummy_y)
-        if bullet_to_enemy_dist <= 40:
-            b[4] = -1
-            enemy_health -= 10
-            points += bullet_hit
+        
+        b_x = b[0]
+        b_y = b[1]
+        b_hp = b[4]
     player_bullets = player_bullets_alive
 
     if enemy_health <= 0:
-        death = True
         points += enemy_kill
 
-    print(enemy_health)
+    # Catherine Enemy beta system
+
+    if keys[112] == True:  # ~
+        for _ in range(5):
+                enemy = [random.randrange(0, WIDTH), random.randrange(0, HEIGHT), 0, 0, enemy_health] 
+                enemies.append(enemy)
+
+    for e in enemies:
+        enemy_to_player_dist = calc_dist(player_x, player_y, e[0], e[1])
+        enemy_angle = calc_angle(e[0], e[1], player_x, player_y)
+        e[2], e[3] = calc_velocity(enemy_speed, enemy_angle)
+        bullet_to_enemy_dist = calc_dist(b_x, b_y, e[0], e[1])
+
+        if enemy_to_player_dist != 0:
+            e[0] += e[2]
+            e[1] += e[3]
+
+        if bullet_to_enemy_dist <= 40:
+            b_hp = -1
+            enemy_health -= 10
+            points += bullet_hit
+
 
 
 
@@ -245,14 +275,11 @@ while running:
 
     # draw the pawn image
     screen.blit(white_player, (player_x, player_y))
-    # dummy enemy
-    if death == False:
-        pygame.draw.circle(screen, (255, 0, 0), (dummy_x, dummy_y), 25)
-    else:
-        dummy_x = 0
-        dummy_y = 0
 
-
+    # enemy - Catherine
+    for e in enemies:
+        pygame.draw.circle(screen, (255, 0, 0), (e[0], e[1]), 25)
+    
     # bullet tragectory
     pygame.draw.line(screen, (0, 0, 255), (player_x, player_y), (mouse_x, mouse_y), 1)
 
