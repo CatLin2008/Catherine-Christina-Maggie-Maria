@@ -64,6 +64,8 @@ enemy_health = 100
 enemy_speed = 3
 b_x = 0
 b_y = 0
+e_colour = (0,255,0)
+e_rect = (0, 0)
 
 # points system
 points = 0
@@ -208,9 +210,9 @@ while running:
         if b[4] >= 0:
             player_bullets_alive.append(b)
         
-        b_x = b[0]
-        b_y = b[1]
-        b_hp = b[4]
+        #b_x = b[0]
+        #b_y = b[1]
+        #b_hp = b[4]
     player_bullets = player_bullets_alive
 
     if enemy_health <= 0:
@@ -219,7 +221,7 @@ while running:
     # Catherine Enemy beta system
 
     if keys[112] == True:  # ~
-        for _ in range(5):
+        for _ in range(1):
                 enemy = [random.randrange(0, WIDTH), random.randrange(0, HEIGHT), 0, 0, enemy_health] 
                 enemies.append(enemy)
 
@@ -227,16 +229,22 @@ while running:
         enemy_to_player_dist = calc_dist(player_x, player_y, e[0], e[1])
         enemy_angle = calc_angle(e[0], e[1], player_x, player_y)
         e[2], e[3] = calc_velocity(enemy_speed, enemy_angle)
-        bullet_to_enemy_dist = calc_dist(b_x, b_y, e[0], e[1])
+        #bullet_to_enemy_dist = calc_dist(b_x, b_y, e[0], e[1])
 
         if enemy_to_player_dist != 0:
             e[0] += e[2]
             e[1] += e[3]
 
-        if bullet_to_enemy_dist <= 40:
-            b_hp = -1
-            enemy_health -= 10
-            points += bullet_hit
+        #if bullet_to_enemy_dist <= 40:
+            #b_hp = -1
+            #enemy_health -= 10
+            #points += bullet_hit
+        
+    enemies_alive = []
+    for e in enemies:
+        if e[4] >= 0:
+            enemies_alive.append(e)
+    enemies = enemies_alive
 
 
 
@@ -277,8 +285,17 @@ while running:
     screen.blit(white_player, (player_x, player_y))
 
     # enemy - Catherine
+    
+    e_collision_box = []
     for e in enemies:
-        pygame.draw.circle(screen, (255, 0, 0), (e[0], e[1]), 25)
+        e_rect = (e[0]-10, e[1]-10, 0, 0)
+        test = pygame.rect(e_rect)
+        
+        e_collision_box.append(e_rect)
+        pygame.draw.rect(screen, (e_colour), e_rect)
+
+    if e_rect.collidelist(e_collision_box) <= 0:
+            e_colour = (255, 0, 0)
     
     # bullet tragectory
     pygame.draw.line(screen, (0, 0, 255), (player_x, player_y), (mouse_x, mouse_y), 1)
