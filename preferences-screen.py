@@ -44,34 +44,48 @@ def save_settings(settings):
     with open('settings.json', 'w') as file:
         json.dump(settings, file)
 
-def text(text, x, y, color=dark_brown):
-    rendered_text = font.render(text, True, color)
-    screen.blit(rendered_text, (x, y))
+def render_split_text(text, x, y, highlight_part, color=dark_brown):
+    parts = text.split(":")
+    rendered_text_1 = font.render(parts[0] + ":", True, highlight_part)
+    screen.blit(rendered_text_1, (x, y))
+    if len(parts) > 1:
+        rendered_text_2 = font.render(parts[1], True, color)
+        screen.blit(rendered_text_2, (x + rendered_text_1.get_width(), y))
 
 def display(screen, settings, selected_option):
     screen.fill(tan)
-    text("PREFERENCES", WIDTH / 3, HEIGHT / 8)
+    render_split_text("PREFERENCES", WIDTH / 3, HEIGHT / 8, dark_brown)
     
     game_mode_color = black if selected_option == "game_mode" else dark_brown
-    text(f"Game Mode: {settings['game_mode']}", 20, 150, game_mode_color)
+    render_split_text(f"Game Mode: {settings['game_mode']}", 20, 150, game_mode_color)
     
     volume_sfx_color = black if selected_option == "volume_sfx" else dark_brown
     volume_music_color = black if selected_option == "volume_music" else dark_brown
-    text("Volume Settings:", 20, 200)
-    text(f"  SFX: {settings['volume']['sfx']}", 40, 250, volume_sfx_color)
-    text(f"  Music: {settings['volume']['music']}", 40, 300, volume_music_color)
+    render_split_text("Volume Settings:", 20, 200, dark_brown)
+    render_split_text(f"SFX: {settings['volume']['sfx']}", 40, 250, volume_sfx_color)
+    render_split_text(f"Music: {settings['volume']['music']}", 40, 300, volume_music_color)
     
-    text("Keybinds:", 20, 350)
+    render_split_text("Keybinds:", 20, 350, dark_brown)
     y_offset = 400
     for action, key in settings['keybinds'].items():
-        text(f"  {action}: {key}", 40, y_offset)
+        render_split_text(f"{action}: {key}", 40, y_offset, dark_brown)
         y_offset += 40
 
 settings = load_settings()
 selected_option = None
 game_modes = ["easy", "medium", "hard"]
 
+# Initialize mixer and load music
+pygame.mixer.init()
+pygame.mixer.music.load('background_music.mp3')  # Replace with your music file
+pygame.mixer.music.set_volume(settings['volume']['music'] / 100)
+pygame.mixer.music.play(-1)  # Play the music in a loop
+
 running = True
+volume_change_direction = None  # None, 'up', or 'down'
+volume_change_speed = 10  # Volume change increment/decrement
+hold_counter = 0  # Counter to control the speed of continuous volume change
+
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -91,15 +105,35 @@ while running:
                     current_mode_index = game_modes.index(settings['game_mode'])
                     settings['game_mode'] = game_modes[(current_mode_index + 1) % len(game_modes)]
             elif selected_option == "volume_sfx":
-                if event.key == pygame.K_UP and settings['volume']['sfx'] < 100:
-                    settings['volume']['sfx'] += 10
-                elif event.key == pygame.K_DOWN and settings['volume']['sfx'] > 0:
-                    settings['volume']['sfx'] -= 10
+                if event.key == pygame.K_UP:
+                    volume_change_direction = 'up'
+                elif event.key == pygame.K_DOWN:
+                    volume_change_direction = 'down'
             elif selected_option == "volume_music":
-                if event.key == pygame.K_UP and settings['volume']['music'] < 100:
-                    settings['volume']['music'] += 10
-                elif event.key == pygame.K_DOWN and settings['volume']['music'] > 0:
-                    settings['volume']['music'] -= 10
+                if event.key == pygame.K_UP:
+                    volume_change_direction = 'up'
+                elif event.key == pygame.K_DOWN:
+                    volume_change_direction = 'down'
+        elif event.type == pygame.KEYUP:
+            if event.key in [pygame.K_UP, pygame.K_DOWN]:
+                volume_change_direction = None
+
+    # Handle continuous volume change
+    if volume_change_direction:
+        hold_counter += 1
+        if hold_counter % 8 == 0:  # Adjust this value to control the speed of continuous change
+            if volume_change_direction == 'up':
+                if selected_option == "volume_sfx" and settings['volume']['sfx'] < 100:
+                    settings['volume']['sfx'] += volume_change_speed
+                elif selected_option == "volume_music" and settings['volume']['music'] < 100:
+                    settings['volume']['music'] += volume_change_speed
+                    pygame.mixer.music.set_volume(settings['volume']['music'] / 100)
+            elif volume_change_direction == 'down':
+                if selected_option == "volume_sfx" and settings['volume']['sfx'] > 0:
+                    settings['volume']['sfx'] -= volume_change_speed
+                elif selected_option == "volume_music" and settings['volume']['music'] > 0:
+                    settings['volume']['music'] -= volume_change_speed
+                    pygame.mixer.music.set_volume(settings['volume']['music'] / 100)
             save_settings(settings)
 
     screen.fill(tan)
