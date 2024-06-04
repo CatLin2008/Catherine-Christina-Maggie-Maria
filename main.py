@@ -180,15 +180,31 @@ while running:
                 if queen_in_store.collidepoint(event.pos): 
                     if c_collected > queenPUP_price:
                         c_collected -=queenPUP_price
+                        queenPUP_counter += 1
+                        if slots:  #moving the new item to inventory if not already their and was purchased
+                                new_slot = slots.pop(0)
+                                queenPUP_x, queenPUP_y = new_slot
                 if laser_in_store.collidepoint(event.pos): 
                     if c_collected > laser_price:
                         c_collected -= laser_price
+                        laserPUP_counter += 1
+                        if slots:  #moving the new laser to inventory if not already their and was purchased
+                                new_slot = slots.pop(0)
+                                laserPUP_x, laserPUP_y = new_slot
                 if rookPUP_in_store.collidepoint(event.pos): 
                     if c_collected > rookPUP_price:
                         c_collected -= rookPUP_price
+                        rookPUP_counter += 1
+                        if slots:  #moving the new laser to inventory if not already their and was purchased
+                                new_slot = slots.pop(0)
+                                rookPUP_x, rookPUP_y = new_slot
                 if health_in_store.collidepoint(event.pos): 
                     if c_collected > healthPUP_price:
-                            c_collected -= healthPUP_price
+                        c_collected -= healthPUP_price
+                        healthPUP_counter += 1
+                        if slots:  #moving the new laser to inventory if not already their and was purchased
+                                new_slot = slots.pop(0)
+                                healthPUP_x, healthPUP_y = new_slot
         if event.type == pygame.QUIT:
             running = False
 
