@@ -60,8 +60,9 @@ bullet_speed = 10
 bullet_life = 200
 
 enemies = []
+enemies_rect = []
 enemy_health = 100
-enemy_speed = 3
+enemy_speed = 1
 b_x = 0
 b_y = 0
 e_colour = (0,255,0)
@@ -173,10 +174,11 @@ while running:
             if event.key == K_ESCAPE:
                 running = False
         elif event.type == pygame.MOUSEBUTTONDOWN: # vectors for bullet
-            click_x2, click_y2 = event.pos
-            angle = calc_angle(player_x, player_y, mouse_x, mouse_y)
-            dx, dy = calc_velocity(bullet_speed, angle)
-            player_bullets.append([player_x, player_y, dx, dy, bullet_life])
+            if event.button == 1:  # Left mouse button
+                click_x, click_y = event.pos
+                angle = calc_angle(player_x, player_y, mouse_x, mouse_y)
+                dx, dy = calc_velocity(bullet_speed, angle)
+                player_bullets.append([player_x, player_y, dx, dy, bullet_life])
         if event.type == pygame.QUIT:
             running = False
 
@@ -209,10 +211,7 @@ while running:
     for b in player_bullets:
         if b[4] >= 0:
             player_bullets_alive.append(b)
-        
-        #b_x = b[0]
-        #b_y = b[1]
-        #b_hp = b[4]
+
     player_bullets = player_bullets_alive
 
     if enemy_health <= 0:
@@ -220,30 +219,43 @@ while running:
 
     # Catherine Enemy beta system
 
-    if keys[112] == True:  # ~
+    if keys[112] == True:  # p
         for _ in range(1):
-                enemy = [random.randrange(0, WIDTH), random.randrange(0, HEIGHT), 0, 0, enemy_health] 
-                enemies.append(enemy)
+            e_x = random.randrange(0, WIDTH)
+            e_y = random.randrange(0, HEIGHT)
+            
+            enemy = [e_x, e_y, 0, 0, enemy_health] 
+            enemies.append(enemy)
+
+            e_rect = pygame.Rect(e_x-10, e_y-10, 20, 20)
+            enemies_rect.append(e_rect)
+
+    
+    enemies_alive = []
 
     for e in enemies:
         enemy_to_player_dist = calc_dist(player_x, player_y, e[0], e[1])
         enemy_angle = calc_angle(e[0], e[1], player_x, player_y)
         e[2], e[3] = calc_velocity(enemy_speed, enemy_angle)
-        #bullet_to_enemy_dist = calc_dist(b_x, b_y, e[0], e[1])
+        e_rect = pygame.Rect(e[0]-10, e[1]-10, 20, 20)
 
         if enemy_to_player_dist != 0:
             e[0] += e[2]
             e[1] += e[3]
-
-        #if bullet_to_enemy_dist <= 40:
-            #b_hp = -1
-            #enemy_health -= 10
-            #points += bullet_hit
         
-    enemies_alive = []
-    for e in enemies:
+        if e_rect.collidelist(enemies_rect):
+            print("COLLIDE!!!")
+        
+        for b in player_bullets:
+            b_rect = pygame.Rect(b[0]-2, b[1]-2, 4, 4)
+            if b_rect.colliderect(e_rect):
+                e[4] -= 10
+                b[4] = -1
+                points += bullet_hit
+        
         if e[4] >= 0:
             enemies_alive.append(e)
+
     enemies = enemies_alive
 
 
@@ -285,29 +297,30 @@ while running:
     screen.blit(white_player, (player_x, player_y))
 
     # enemy - Catherine
-    
-    e_collision_box = []
-    for e in enemies:
-        e_rect = (e[0]-10, e[1]-10, 0, 0)
-        test = pygame.rect(e_rect)
-        
-        e_collision_box.append(e_rect)
-        pygame.draw.rect(screen, (e_colour), e_rect)
 
-    if e_rect.collidelist(e_collision_box) <= 0:
-            e_colour = (255, 0, 0)
+    for e in enemies:
+        e_rect = pygame.Rect(e[0]-10, e[1]-10, 20, 20)
+        pygame.draw.rect(screen, (255, 0, 0), e_rect)    
+    
+    # e_collision_box = []
+    # for e in enemies:
+    #     e_rect = (e[0]-10, e[1]-10, 0, 0)
+    #     test = pygame.rect(e_rect)
+        
+    #     e_collision_box.append(e_rect)
+    #     pygame.draw.rect(screen, (e_colour), e_rect)
+
+    # if e_rect.collidelist(e_collision_box) <= 0:
+    #         e_colour = (255, 0, 0)
     
     # bullet tragectory
     pygame.draw.line(screen, (0, 0, 255), (player_x, player_y), (mouse_x, mouse_y), 1)
 
     # bullet
     for b in player_bullets:
-        x = b[0]
-        y = b[1]
-        pygame.draw.circle(screen, (0, 0, 0), (x, y), 2)
+        b_rect = pygame.Rect(b[0]-2, b[1]-2, 4, 4)
+        pygame.draw.rect(screen, (0, 0, 0), b_rect) 
 
-    for b in player_bullets:
-        pygame.draw.circle(screen, (0, 0, 0), (b[0], b[1]), 3)
 
     # Points bar
     print_text(f"{points}", text_font, (0,0,0), 10, 10)
