@@ -158,8 +158,31 @@ laser_in_store = pygame.Rect(225, og_purchase_y, purchase_slots_width, purchase_
 rookPUP_in_store = pygame.Rect(425, og_purchase_y, purchase_slots_width, purchase_slots_height)
 health_in_store = pygame.Rect(625, og_purchase_y, purchase_slots_width, purchase_slots_height)
 
-# ----------------
-# ---------------------------
+#defining what a powerup should do when colliding the player
+def handle_powerup_collision(powerup_x, powerup_y, counter):
+        if pygame.Rect(powerup_x, powerup_y, 80, 80).colliderect(player_rect):
+            new_slot = slots[0]
+            slots.pop(0)
+            if new_slot:
+                counter += 1
+                powerup_x, powerup_y = new_slot
+
+        return powerup_x, powerup_y, counter
+
+#beta code still in development for the activation of powerups 
+def check_powerup_click(mouse_x, mouse_y):
+    global queenPUP_counter, rookPUP_counter, healthPUP_counter, laserPUP_counter
+    for slot in slots:
+        slot_rect = pygame.Rect(slot[0], slot[1], 65, 65)
+        if slot_rect.collidepoint(mouse_x, mouse_y):
+            if queenPUP_counter > 0 and slot_rect.collidepoint(queenPUP_x, queenPUP_y):
+                queenPUP_counter -= 1
+            elif rookPUP_counter > 0 and slot_rect.collidepoint(rookPUP_x, rookPUP_y):
+                rookPUP_counter -= 1
+            elif healthPUP_counter > 0 and slot_rect.collidepoint(healthPUP_x, healthPUP_y):
+                healthPUP_counter -= 1
+            elif laserPUP_counter > 0 and slot_rect.collidepoint(laserPUP_x, laserPUP_y):
+                laserPUP_counter -= 1 
 # Functions
 running = True
 while running:
@@ -176,6 +199,7 @@ while running:
             angle = math.atan2(mouse_y - player_y, mouse_x - player_x) # chatgpt
             dx, dy = [bullet_speed * math.cos(angle), bullet_speed * math.sin(angle)] # chatgpt
             player_bullets.append([player_x, player_y, dx, dy, bullet_life])
+            check_powerup_click(mouse_x, mouse_y)
             if store_open: #code for purchasing the powerups in the store
                 if queen_in_store.collidepoint(event.pos): 
                     if c_collected > queenPUP_price:
@@ -271,17 +295,6 @@ while running:
             coins.remove(c)
             c_collected += 1
 
-#defining what a powerup should do when colliding the player
-    def handle_powerup_collision(powerup_x, powerup_y, counter):
-        if pygame.Rect(powerup_x, powerup_y, 80, 80).colliderect(player_rect):
-            new_slot = slots[0]
-            slots.pop(0)
-            if new_slot:
-                counter += 1
-                powerup_x, powerup_y = new_slot
-
-        return powerup_x, powerup_y, counter
-
     if queenPUP_y <= 600:
         queenPUP_x, queenPUP_y, queenPUP_counter = handle_powerup_collision(queenPUP_x, queenPUP_y, queenPUP_counter)
     if healthPUP_y <= 600:
@@ -376,6 +389,8 @@ while running:
         pygame.draw.rect(screen, store_colour, ((WIDTH - store_width) / 2, (HEIGHT - store_height) / 2, store_width, store_height))
         pygame.draw.rect(screen, coin_colour, (300, 600, 200, 50))
         print_text(f"Coins: {c_collected}", text_font, (0, 0, 0), 335,610)
+        print_text(f"STORE", text_font, (0, 0, 0), 350,125)
+
         #queen buy
         pygame.draw.rect(screen, (coin_colour), (og_purchase_x, og_purchase_y, purchase_slots_width, purchase_slots_height))
         screen.blit(queenPUP, (og_purchase_x + 30, og_purchase_y+ 80))
