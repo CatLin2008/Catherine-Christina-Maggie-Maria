@@ -77,15 +77,17 @@ game_modes = ["easy", "medium", "hard"]
 
 # Initialize mixer and load music
 pygame.mixer.init()
-pygame.mixer.music.load('background_music.mp3')  # Replace with your music file
+pygame.mixer.music.load('background_music.mp3')  
 pygame.mixer.music.set_volume(settings['volume']['music'] / 100)
-pygame.mixer.music.play(-1)  # Play the music in a loop
+pygame.mixer.music.play(-1)  
+
+# Load the SFX sound
+sfx_sound = pygame.mixer.Sound('coinsound.mp3')  
 
 running = True
-volume_change_direction = None  # None, 'up', or 'down'
-volume_change_speed = 10  # Volume change increment/decrement
-hold_counter = 0  # Counter to control the speed of continuous volume change
-
+volume_change_direction = None  
+volume_change_speed = 10  
+hold_counter = 0  
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -121,16 +123,20 @@ while running:
     # Handle continuous volume change
     if volume_change_direction:
         hold_counter += 1
-        if hold_counter % 8 == 0:  # Adjust this value to control the speed of continuous change
+        if hold_counter % 8 == 0:  
             if volume_change_direction == 'up':
                 if selected_option == "volume_sfx" and settings['volume']['sfx'] < 100:
                     settings['volume']['sfx'] += volume_change_speed
+                    sfx_sound.set_volume(settings['volume']['sfx'] / 100)
+                    sfx_sound.play()  
                 elif selected_option == "volume_music" and settings['volume']['music'] < 100:
                     settings['volume']['music'] += volume_change_speed
                     pygame.mixer.music.set_volume(settings['volume']['music'] / 100)
             elif volume_change_direction == 'down':
                 if selected_option == "volume_sfx" and settings['volume']['sfx'] > 0:
                     settings['volume']['sfx'] -= volume_change_speed
+                    sfx_sound.set_volume(settings['volume']['sfx'] / 100)
+                    sfx_sound.play()  
                 elif selected_option == "volume_music" and settings['volume']['music'] > 0:
                     settings['volume']['music'] -= volume_change_speed
                     pygame.mixer.music.set_volume(settings['volume']['music'] / 100)
@@ -139,6 +145,6 @@ while running:
     screen.fill(tan)
     display(screen, settings, selected_option)
     pygame.display.flip()
-    clock.tick(30)
+    clock.tick(60)
 
 pygame.quit()
