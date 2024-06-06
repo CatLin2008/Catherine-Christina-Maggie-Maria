@@ -66,9 +66,12 @@ points = 0
 bullet_hit = 10
 enemy_kill = 200
 
+
 #queen powerup location
 queenPUP_x = random.randrange(0, 750)
 queenPUP_y = random.randrange(60, 500)
+queen_parameters = pygame.Rect(queenPUP_x, queenPUP_y, 90, 90)
+
 queenPUP_list = [
     pygame.Rect(queenPUP_x, queenPUP_y, 2, 5)
 ]
@@ -77,6 +80,8 @@ queenPUP_counter = 0
 #health powerup location
 healthPUP_x = random.randrange(0, 800)
 healthPUP_y = random.randrange(60, 500)
+health_parameters = pygame.Rect(healthPUP_x, healthPUP_y, 90, 90)
+
 healthPUP_list = [
     pygame.Rect(healthPUP_x, healthPUP_y, 2, 5)
 ]
@@ -85,6 +90,7 @@ healthPUP_counter = 0
 #laser powerup location
 laserPUP_x = random.randrange(0, 800)
 laserPUP_y = random.randrange(60, 500)
+laser_parameters = pygame.Rect(laserPUP_x, laserPUP_y, 90, 90)
 laserPUP_list = [
     pygame.Rect(laserPUP_x, laserPUP_y, 2, 5)
 ]
@@ -93,6 +99,8 @@ laserPUP_counter = 0
 #rook powerup location
 rookPUP_x = random.randrange(0, 800)
 rookPUP_y = random.randrange(60, 500)
+rook_parameters = pygame.Rect(rookPUP_x, rookPUP_y, 90, 90)
+
 rookPUP_list = [
     pygame.Rect(rookPUP_x, rookPUP_y, 2, 5)
 ]
@@ -169,20 +177,7 @@ def handle_powerup_collision(powerup_x, powerup_y, counter):
 
         return powerup_x, powerup_y, counter
 
-#beta code still in development for the activation of powerups 
-def check_powerup_click(mouse_x, mouse_y):
-    global queenPUP_counter, rookPUP_counter, healthPUP_counter, laserPUP_counter
-    for slot in slots:
-        slot_rect = pygame.Rect(slot[0], slot[1], 65, 65)
-        if slot_rect.collidepoint(mouse_x, mouse_y):
-            if queenPUP_counter > 0 and slot_rect.collidepoint(queenPUP_x, queenPUP_y):
-                queenPUP_counter -= 1
-            elif rookPUP_counter > 0 and slot_rect.collidepoint(rookPUP_x, rookPUP_y):
-                rookPUP_counter -= 1
-            elif healthPUP_counter > 0 and slot_rect.collidepoint(healthPUP_x, healthPUP_y):
-                healthPUP_counter -= 1
-            elif laserPUP_counter > 0 and slot_rect.collidepoint(laserPUP_x, laserPUP_y):
-                laserPUP_counter -= 1 
+
 # Functions
 running = True
 while running:
@@ -229,6 +224,19 @@ while running:
                         if slots:  #moving the new laser to inventory if not already their and was purchased
                                 new_slot = slots.pop(0)
                                 healthPUP_x, healthPUP_y = new_slot
+                 if laserPUP_counter >= 1:
+                    if laser_parameters.collidepoint(event.pos):
+                         laserPUP_counter -= 1
+                if queenPUP_counter >= 1:
+                    if queen_parameters.collidepoint(event.pos):
+                         queenPUP_counter -= 1
+                if healthPUP_counter >= 1:
+                    if health_parameters.collidepoint(event.pos):
+                         healthPUP_counter -= 1
+                if rookPUP_counter >= 1:
+                    if rook_parameters.collidepoint(event.pos):
+                         rookPUP_counter -= 1
+
         if event.type == pygame.QUIT:
             running = False
 
@@ -371,17 +379,16 @@ while running:
     for rook_pups in rookPUP_list: 
         screen.blit(rookPUP, (rookPUP_x, rookPUP_y))
 
-#coding for numbering how many powerups you pick uo 
 
-    for slot in slots: 
-        if (queenPUP_x, queenPUP_y) == slot:
-            print_text(f"{queenPUP_counter}", text_font_smaller, (0,0,0), queenPUP_x + 55, queenPUP_y +8)
-        if (rookPUP_x, rookPUP_y) == slot:
-            print_text(f"{rookPUP_counter}", text_font_smaller, (0,0,0), rookPUP_x + 55, rookPUP_y +8)
-        if(healthPUP_x, healthPUP_y) == slot:
-            print_text(f"{healthPUP_counter}", text_font_smaller, (0,0,0), healthPUP_x + 55, healthPUP_y +8)
-        if (laserPUP_x, laserPUP_y) == slot:
-         print_text(f"{laserPUP_counter}", text_font_smaller, (0,0,0), laserPUP_x +55, laserPUP_y + 8)
+#fixed the counter system 
+    if queenPUP_counter >= 1:
+            print_text(f"{queenPUP_counter}", text_font_smaller, (0,0,0), queenPUP_x + 55, queenPUP_y +10)
+    if rookPUP_counter >= 1:
+            print_text(f"{rookPUP_counter}", text_font_smaller, (0,0,0), rookPUP_x + 55, rookPUP_y +10)
+    if healthPUP_counter >= 1:       
+         print_text(f"{healthPUP_counter}", text_font_smaller, (0,0,0), healthPUP_x + 55, healthPUP_y +10)
+    if laserPUP_counter >= 1:
+         print_text(f"{laserPUP_counter}", text_font_smaller, (0,0,0), laserPUP_x +55, laserPUP_y + 10)
     
 
 #drawing the store and what they can purchase by pressing E
