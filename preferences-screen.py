@@ -4,16 +4,31 @@ import pygame
 pygame.init()
 
 WIDTH = 800
-HEIGHT = 650
+HEIGHT = 700
 SIZE = (WIDTH, HEIGHT)
 
 # Initialize global variables
 screen = pygame.display.set_mode(SIZE)
 clock = pygame.time.Clock()
-font = pygame.font.SysFont('Fira Sans Extra Condensed', 50)
+font_small = pygame.font.SysFont('Fira Sans Extra Condensed', 30)
+font_medium = pygame.font.SysFont('Fira Sans Extra Condensed', 40)
+font_large = pygame.font.SysFont('Fira Sans Extra Condensed', 50)
 dark_brown = 139, 69, 19
 tan = 210, 180, 140
 black = 0, 0, 0
+
+# Slider properties
+slider_length = 400
+slider_height = 5
+slider_radius = 10
+
+# Checkbox properties
+checkbox_size = 30
+checkbox_margin = 150  # Increased to ensure proper spacing
+
+# Load checkbox tick image
+checkbox_tick_img = pygame.image.load('tick.png')  # Replace with your tick image file
+checkbox_tick_img = pygame.transform.scale(checkbox_tick_img, (checkbox_size, checkbox_size))
 
 # Initial settings
 settings = {
@@ -44,9 +59,15 @@ def save_settings(settings):
     with open('settings.json', 'w') as file:
         json.dump(settings, file)
 
-def render_split_text(text, x, y, highlight_part, color=dark_brown):
+def render_centered_text(text, font, color, screen, center_x, center_y):
+    text_surface = font.render(text, True, color)
+    text_rect = text_surface.get_rect()
+    text_rect.center = (center_x, center_y)
+    screen.blit(text_surface, text_rect)
+
+def render_split_text(text, x, y, highlight_part=dark_brown, color=dark_brown, font=font_small):
     parts = text.split(":")
-    rendered_text_1 = font.render(parts[0] + ":", True, highlight_part)
+    rendered_text_1 = font.render(parts[0], True, highlight_part)  # Removed the colon
     screen.blit(rendered_text_1, (x, y))
     if len(parts) > 1:
         rendered_text_2 = font.render(parts[1], True, color)
@@ -54,22 +75,40 @@ def render_split_text(text, x, y, highlight_part, color=dark_brown):
 
 def display(screen, settings, selected_option):
     screen.fill(tan)
-    render_split_text("PREFERENCES", WIDTH / 3, HEIGHT / 8, dark_brown)
-    
-    game_mode_color = black if selected_option == "game_mode" else dark_brown
-    render_split_text(f"Game Mode: {settings['game_mode']}", 20, 150, game_mode_color)
-    
-    volume_sfx_color = black if selected_option == "volume_sfx" else dark_brown
-    volume_music_color = black if selected_option == "volume_music" else dark_brown
-    render_split_text("Volume Settings:", 20, 200, dark_brown)
-    render_split_text(f"SFX: {settings['volume']['sfx']}", 40, 250, volume_sfx_color)
-    render_split_text(f"Music: {settings['volume']['music']}", 40, 300, volume_music_color)
-    
-    render_split_text("Keybinds:", 20, 350, dark_brown)
-    y_offset = 400
-    for action, key in settings['keybinds'].items():
-        render_split_text(f"{action}: {key}", 40, y_offset, dark_brown)
-        y_offset += 40
+    render_split_text("PREFERENCES", WIDTH / 3, HEIGHT - 650, dark_brown, dark_brown, font_large)
+
+    render_split_text("Game Mode", 20, 150, black, black, font_medium)  # Removed the colon
+    game_mode_x = 250  # Moved to the right
+    for mode in game_modes:
+        mode_text_y = 130
+        checkbox_y = 160
+        render_split_text(mode.capitalize(), game_mode_x, mode_text_y, dark_brown)
+        draw_checkbox(game_mode_x, checkbox_y, mode == settings['game_mode'])
+        game_mode_x += checkbox_size + checkbox_margin
+
+    render_split_text("Volume Settings", 20, 250, black, black, font_medium)  # Removed the colon
+
+    # Draw sliders
+    draw_slider((WIDTH - slider_length) // 2, 350, settings['volume']['sfx'], dark_brown)
+    draw_slider((WIDTH - slider_length) // 2, 450, settings['volume']['music'], dark_brown)
+
+    render_split_text("Keybinds", 20, 500, black, black, font_medium)  # Removed the colon
+    y_offset = 550  # Moved the keybinds section further down
+    move_up_width = font_medium.size("move up")[0]  # Get the width of "move up" text
+    render_split_text("Move Up", 40, y_offset, dark_brown, font_medium)  # Render "move up" text
+    render_split_text("Move Down", 40, y_offset + 40, dark_brown, font_medium)  # Render "move down" text
+    render_split_text("Move Left A", 40 + move_up_width + 20, y_offset, dark_brown, font_medium)  # Render "move left A move right D" text
+    render_split_text("Move Right D", 40 + move_up_width + 20, y_offset+40, dark_brown, font_medium)
+
+def draw_slider(x, y, value, color):
+    pygame.draw.line(screen, color, (x, y), (x + slider_length, y), slider_height)
+    dot_x = x + (value / 100) * slider_length
+    pygame.draw.circle(screen, color, (int(dot_x), y), slider_radius)
+
+def draw_checkbox(x, y, checked):
+    pygame.draw.rect(screen, black, (x, y, checkbox_size, checkbox_size), 4)  # Thicker line
+    if checked:
+        screen.blit(checkbox_tick_img, (x, y))
 
 settings = load_settings()
 selected_option = None
@@ -77,70 +116,54 @@ game_modes = ["easy", "medium", "hard"]
 
 # Initialize mixer and load music
 pygame.mixer.init()
-pygame.mixer.music.load('background_music.mp3')  
+pygame.mixer.music.load('background_music.mp3')  # Replace with your music file
 pygame.mixer.music.set_volume(settings['volume']['music'] / 100)
-pygame.mixer.music.play(-1)  
-
-# Load the SFX sound
-sfx_sound = pygame.mixer.Sound('coinsound.mp3')  
+pygame.mixer.music.play(-1)  # Play the music in a loop
 
 running = True
-volume_change_direction = None  
-volume_change_speed = 10  
-hold_counter = 0  
+dragging_sfx = False
+dragging_music = False
+
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
         elif event.type == pygame.MOUSEBUTTONDOWN:
             x, y = event.pos
-            if 20 < x < 200:
-                if 150 < y < 200:
-                    selected_option = "game_mode"
-                elif 250 < y < 300:
-                    selected_option = "volume_sfx"
-                elif 300 < y < 350:
-                    selected_option = "volume_music"
+            game_mode_x = 250  # Moved to the right
+            for mode in game_modes:
+                if game_mode_x <= x <= game_mode_x + checkbox_size and 160 <= y <= 160 + checkbox_size:
+                    settings['game_mode'] = mode
+                    selected_option = f"game_mode_{mode}"
+                    save_settings(settings)
+                game_mode_x += checkbox_size + checkbox_margin
+
+            slider_x = (WIDTH - slider_length) // 2
+            if 350 - slider_radius <= y <= 350 + slider_radius and slider_x <= x <= slider_x + slider_length:
+                dragging_sfx = True
+            elif 450 - slider_radius <= y <= 450 + slider_radius and slider_x <= x <= slider_x + slider_length:
+                dragging_music = True
+        elif event.type == pygame.MOUSEBUTTONUP:
+            dragging_sfx = False
+            dragging_music = False
+        elif event.type == pygame.MOUSEMOTION:
+            if dragging_sfx:
+                x, y = event.pos
+                new_value = min(max((x - slider_x) / slider_length * 100, 0), 100)
+                settings['volume']['sfx'] = int(new_value)
+                save_settings(settings)
+            elif dragging_music:
+                x, y = event.pos
+                new_value = min(max((x - slider_x) / slider_length * 100, 0), 100)
+                settings['volume']['music'] = int(new_value)
+                pygame.mixer.music.set_volume(settings['volume']['music'] / 100)
+                save_settings(settings)
         elif event.type == pygame.KEYDOWN:
-            if selected_option == "game_mode":
+            if selected_option and selected_option.startswith("game_mode"):
                 if event.key in [pygame.K_LEFT, pygame.K_RIGHT]:
                     current_mode_index = game_modes.index(settings['game_mode'])
                     settings['game_mode'] = game_modes[(current_mode_index + 1) % len(game_modes)]
-            elif selected_option == "volume_sfx":
-                if event.key == pygame.K_UP:
-                    volume_change_direction = 'up'
-                elif event.key == pygame.K_DOWN:
-                    volume_change_direction = 'down'
-            elif selected_option == "volume_music":
-                if event.key == pygame.K_UP:
-                    volume_change_direction = 'up'
-                elif event.key == pygame.K_DOWN:
-                    volume_change_direction = 'down'
-        elif event.type == pygame.KEYUP:
-            if event.key in [pygame.K_UP, pygame.K_DOWN]:
-                volume_change_direction = None
-
-    # Handle continuous volume change
-    if volume_change_direction:
-        hold_counter += 1
-        if hold_counter % 8 == 0:  
-            if volume_change_direction == 'up':
-                if selected_option == "volume_sfx" and settings['volume']['sfx'] < 100:
-                    settings['volume']['sfx'] += volume_change_speed
-                    sfx_sound.set_volume(settings['volume']['sfx'] / 100)
-                    sfx_sound.play()  
-                elif selected_option == "volume_music" and settings['volume']['music'] < 100:
-                    settings['volume']['music'] += volume_change_speed
-                    pygame.mixer.music.set_volume(settings['volume']['music'] / 100)
-            elif volume_change_direction == 'down':
-                if selected_option == "volume_sfx" and settings['volume']['sfx'] > 0:
-                    settings['volume']['sfx'] -= volume_change_speed
-                    sfx_sound.set_volume(settings['volume']['sfx'] / 100)
-                    sfx_sound.play()  
-                elif selected_option == "volume_music" and settings['volume']['music'] > 0:
-                    settings['volume']['music'] -= volume_change_speed
-                    pygame.mixer.music.set_volume(settings['volume']['music'] / 100)
-            save_settings(settings)
+                    save_settings(settings)
 
     screen.fill(tan)
     display(screen, settings, selected_option)
