@@ -195,35 +195,40 @@ while running:
             dx, dy = [bullet_speed * math.cos(angle), bullet_speed * math.sin(angle)] # chatgpt
             player_bullets.append([player_x, player_y, dx, dy, bullet_life])
             check_powerup_click(mouse_x, mouse_y)
-            if store_open: #code for purchasing the powerups in the store
+             if store_open: #code for purchasing the powerups in the store
                 if queen_in_store.collidepoint(event.pos): 
                     if c_collected > queenPUP_price:
                         c_collected -=queenPUP_price
                         queenPUP_counter += 1
                         if slots:  #moving the new item to inventory if not already their and was purchased
-                                new_slot = slots.pop(0)
-                                queenPUP_x, queenPUP_y = new_slot
+                                    new_slot = slots.pop(0)
+                                    if  queenPUP_y <600:
+                                        queenPUP_x, queenPUP_y = new_slot
                 if laser_in_store.collidepoint(event.pos): 
                     if c_collected > laser_price:
                         c_collected -= laser_price
                         laserPUP_counter += 1
                         if slots:  #moving the new laser to inventory if not already their and was purchased
                                 new_slot = slots.pop(0)
-                                laserPUP_x, laserPUP_y = new_slot
+                                if laserPUP_y < 600:
+                                    laserPUP_x, laserPUP_y = new_slot
                 if rookPUP_in_store.collidepoint(event.pos): 
                     if c_collected > rookPUP_price:
                         c_collected -= rookPUP_price
                         rookPUP_counter += 1
                         if slots:  #moving the new laser to inventory if not already their and was purchased
                                 new_slot = slots.pop(0)
-                                rookPUP_x, rookPUP_y = new_slot
+                                if rookPUP_y < 600:
+                                    rookPUP_x, rookPUP_y = new_slot
                 if health_in_store.collidepoint(event.pos): 
                     if c_collected > healthPUP_price:
                         c_collected -= healthPUP_price
                         healthPUP_counter += 1
                         if slots:  #moving the new laser to inventory if not already their and was purchased
                                 new_slot = slots.pop(0)
-                                healthPUP_x, healthPUP_y = new_slot
+                                if healthPUP_y < 600:
+                                    healthPUP_x, healthPUP_y = new_slot
+
                  if laserPUP_counter >= 1:
                     if laser_parameters.collidepoint(event.pos):
                          laserPUP_counter -= 1
