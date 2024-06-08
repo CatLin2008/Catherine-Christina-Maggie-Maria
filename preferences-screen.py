@@ -30,12 +30,22 @@ checkbox_margin = 150  # Increased to ensure proper spacing
 checkbox_tick_img = pygame.image.load('tick.png')  # Replace with your tick image file
 checkbox_tick_img = pygame.transform.scale(checkbox_tick_img, (checkbox_size, checkbox_size))
 
+# Load and scale slider images
+minus_sign = pygame.image.load('minus_sign.png')
+plus_sign = pygame.image.load('plus_sign.png')
+minus_sign = pygame.transform.scale(minus_sign, (80, 80))
+plus_sign = pygame.transform.scale(plus_sign, (80, 80))
+
+# Load and scale the back button image
+back_button = pygame.image.load('backbutton.png')  # Replace with your back button image file
+back_button_size = pygame.transform.scale(back_button, (200, 200))  # Adjust the size as needed
+
 # Initial settings
 settings = {
     "game_mode": "easy",
     "volume": {
-        "sfx": 50,
-        "music": 50
+        "sfx": 0,  # Start at 0
+        "music": 0  # Start at 0
     },
     "keybinds": {
         "move up": "W",
@@ -67,7 +77,7 @@ def render_centered_text(text, font, color, screen, center_x, center_y):
 
 def render_split_text(text, x, y, highlight_part=dark_brown, color=dark_brown, font=font_small):
     parts = text.split(":")
-    rendered_text_1 = font.render(parts[0], True, highlight_part)  # Removed the colon
+    rendered_text_1 = font.render(parts[0], True, highlight_part)  
     screen.blit(rendered_text_1, (x, y))
     if len(parts) > 1:
         rendered_text_2 = font.render(parts[1], True, color)
@@ -75,10 +85,10 @@ def render_split_text(text, x, y, highlight_part=dark_brown, color=dark_brown, f
 
 def display(screen, settings, selected_option):
     screen.fill(tan)
-    render_split_text("PREFERENCES", WIDTH / 3, HEIGHT - 650, dark_brown, dark_brown, font_large)
+    render_split_text("PREFERENCES", WIDTH / 3, HEIGHT - 650, black, black, font_large)
 
-    render_split_text("Game Mode", 20, 150, black, black, font_medium)  # Removed the colon
-    game_mode_x = 250  # Moved to the right
+    render_split_text("Game Mode", 20, 150, black, black, font_medium)  
+    game_mode_x = 250 
     for mode in game_modes:
         mode_text_y = 130
         checkbox_y = 160
@@ -89,21 +99,32 @@ def display(screen, settings, selected_option):
     render_split_text("Volume Settings", 20, 250, black, black, font_medium)  # Removed the colon
 
     # Draw sliders
-    draw_slider((WIDTH - slider_length) // 2, 350, settings['volume']['sfx'], dark_brown)
-    draw_slider((WIDTH - slider_length) // 2, 450, settings['volume']['music'], dark_brown)
+    draw_slider((WIDTH - slider_length) // 2, 350, settings['volume']['sfx'], black, minus_sign, plus_sign)
+    draw_slider((WIDTH - slider_length) // 2, 450, settings['volume']['music'], black, minus_sign, plus_sign)
 
-    render_split_text("Keybinds", 20, 500, black, black, font_medium)  # Removed the colon
-    y_offset = 550  # Moved the keybinds section further down
-    move_up_width = font_medium.size("move up")[0]  # Get the width of "move up" text
-    render_split_text("Move Up", 40, y_offset, dark_brown, font_medium)  # Render "move up" text
-    render_split_text("Move Down", 40, y_offset + 40, dark_brown, font_medium)  # Render "move down" text
-    render_split_text("Move Left A", 40 + move_up_width + 20, y_offset, dark_brown, font_medium)  # Render "move left A move right D" text
-    render_split_text("Move Right D", 40 + move_up_width + 20, y_offset+40, dark_brown, font_medium)
+    # Draw slider labels
+    render_centered_text("SFX", font_medium, dark_brown, screen, WIDTH // 2, 310)
+    render_centered_text("Music", font_medium, dark_brown, screen, WIDTH // 2, 410)
 
-def draw_slider(x, y, value, color):
+    render_split_text("Keybinds", 20, 500, black, black, font_medium)  
+    y_offset = 550  
+    move_up_width = font_medium.size("move up")[0]  
+    render_split_text("Move Up", 40, y_offset, dark_brown, font_medium)  
+    render_split_text("Move Down", 40, y_offset + 40, dark_brown, font_medium)  
+    render_split_text("Move Left A", 40 + move_up_width + 20, y_offset, dark_brown, font_medium)  
+    render_split_text("Move Right D", 40 + move_up_width + 20, y_offset + 40, dark_brown, font_medium)
+    
+    # Draw the back button at the bottom left corner
+    screen.blit(back_button_size, (600, HEIGHT - back_button_size.get_height() +10))
+
+def draw_slider(x, y, value, color, left_img, right_img):
     pygame.draw.line(screen, color, (x, y), (x + slider_length, y), slider_height)
     dot_x = x + (value / 100) * slider_length
     pygame.draw.circle(screen, color, (int(dot_x), y), slider_radius)
+    
+    # Display images further from the sliders
+    screen.blit(left_img, (x - left_img.get_width() - 45, y - left_img.get_height() // 2))  # Changed offset to 30
+    screen.blit(right_img, (x + slider_length + 50, y - right_img.get_height() // 2))  # Changed offset to 30
 
 def draw_checkbox(x, y, checked):
     pygame.draw.rect(screen, black, (x, y, checkbox_size, checkbox_size), 4)  # Thicker line
