@@ -6,7 +6,7 @@ from pygame.locals import K_ESCAPE, KEYDOWN, QUIT, K_RIGHT, K_LEFT, MOUSEBUTTOND
 pygame.init()
 
 WIDTH = 800
-HEIGHT = 700
+HEIGHT = 600
 SIZE = (WIDTH, HEIGHT)
 
 def print_text(text, font, text_colour, text_x, text_y):
@@ -25,6 +25,9 @@ player_speed = 5
 player_width = 60
 player_height = 115
 white_player = pygame.image.load("white-chess-piece.png").convert_alpha()
+player_hp = 100
+
+damage_cooldown = 0
 
 player_bullets = []
 bullet_speed = 10
@@ -43,6 +46,9 @@ e_rect = (0, 0)
 points = 0
 bullet_hit = 10
 enemy_kill = 200
+
+# waves
+wave = 0
 
 # background
 background = pygame.image.load("Untitled drawing.png")
@@ -267,17 +273,21 @@ while running:
     # WASD movement
     #!! taken from mrgallo site
     keys = pygame.key.get_pressed()
-    if keys[119] == True:  # w
-        player_y -= 10
+    if player_y > 0:
+        if keys[119] == True:  # w
+            player_y -= 10
 
-    if keys[97] == True:  # a
-        player_x -= 10
+    if player_x > 0:
+        if keys[97] == True:  # a
+            player_x -= 10
 
-    if keys[115] == True:  # s
-        player_y += 10
+    if player_y < HEIGHT-player_height:
+        if keys[115] == True:  # s
+            player_y += 10
 
-    if keys[100] == True:  # d
-        player_x += 10
+    if player_x < WIDTH-player_width:
+        if keys[100] == True:  # d
+            player_x += 10
 
       #adding a key press on E to open the store
     if keys[101]:  
@@ -320,19 +330,27 @@ while running:
 
     
     enemies_alive = []
+    e_rects = []
 
     for e in enemies:
         enemy_to_player_dist = calc_dist(player_x, player_y, e[0], e[1])
         enemy_angle = calc_angle(e[0], e[1], player_x, player_y)
         e[2], e[3] = calc_velocity(enemy_speed, enemy_angle)
         e_rect = pygame.Rect(e[0]-10, e[1]-10, 20, 20)
+        e_rects.append(e_rect)
 
         if enemy_to_player_dist != 0:
-            e[0] += e[2]
-            e[1] += e[3]
-        
-        # if e_rect.collidelist(enemies_rect):
-        #     print("COLLIDE!!!")
+            if enemy_to_player_dist < 50:
+                e[0] += e[2]*2
+                e[1] += e[3]*2
+            else:
+                e[0] += e[2]
+                e[1] += e[3]
+        if damage_cooldown > 0:
+            for _ in range(60):
+                e[0] -= e[2]*2
+                e[1] -= e[3]*2
+            #add attack animation
         
         for b in player_bullets:
             b_rect = pygame.Rect(b[0]-2, b[1]-2, 4, 4)
@@ -346,9 +364,27 @@ while running:
 
     enemies = enemies_alive
 
-    # player hit box
+    # player 
     player_hitbox = white_player.get_rect()
     player_hitbox.topleft = (player_x, player_y)
+
+    if damage_cooldown <= 0:
+        if player_hitbox.collidelist(e_rects) >= 0:
+            player_hp -= 10
+            damage_cooldown = 20
+    elif damage_cooldown > 0:
+        damage_cooldown -= 1
+
+    print(player_hp)
+
+    if player_hp <= 0:
+        print("dead")
+
+    # waves
+
+    wave
+
+
     
 
 
@@ -489,6 +525,9 @@ while running:
 
     # Points bar
         print_text(f"{points}", text_font, (0,0,0), 10, 10)
+    
+    # waves
+        print_text(f"WAVE {wave}", text_font, (0,0,0), WIDTH/2, 10)
 
 
         #inventory lower bar 
