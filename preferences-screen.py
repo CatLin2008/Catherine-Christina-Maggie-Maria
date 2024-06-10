@@ -40,6 +40,18 @@ plus_sign = pygame.transform.scale(plus_sign, (80, 80))
 back_button = pygame.image.load('backbutton.png')  # Replace with your back button image file
 back_button_size = pygame.transform.scale(back_button, (200, 200))  # Adjust the size as needed
 
+# Load and scale keybind images
+w_image = pygame.image.load('w_image.png')  # Replace with your w image file
+s_image = pygame.image.load('s_image.png')  # Replace with your s image file
+a_image = pygame.image.load('a_image.png')  # Replace with your a image file
+d_image = pygame.image.load('d_image.png')  # Replace with your d image file
+
+keybind_image_size = (30, 30)  # Set the size for keybind images
+w_image = pygame.transform.scale(w_image, keybind_image_size)
+s_image = pygame.transform.scale(s_image, keybind_image_size)
+a_image = pygame.transform.scale(a_image, keybind_image_size)
+d_image = pygame.transform.scale(d_image, keybind_image_size)
+
 # Initial settings
 settings = {
     "game_mode": "easy",
@@ -108,14 +120,23 @@ def display(screen, settings, selected_option):
 
     render_split_text("Keybinds", 20, 500, black, black, font_medium)  
     y_offset = 550  
-    move_up_width = font_medium.size("move up")[0]  
-    render_split_text("Move Up", 40, y_offset, dark_brown, font_medium)  
-    render_split_text("Move Down", 40, y_offset + 40, dark_brown, font_medium)  
-    render_split_text("Move Left A", 40 + move_up_width + 20, y_offset, dark_brown, font_medium)  
-    render_split_text("Move Right D", 40 + move_up_width + 20, y_offset + 40, dark_brown, font_medium)
+    x_offset = 300  # Increased horizontal distance between keybinds
+    move_up_width = font_medium.size("move up")[0]
+    
+    render_split_text("Move Up", 40, y_offset, dark_brown, font_medium)
+    screen.blit(w_image, (40 + move_up_width + 10, y_offset))  # Position the image next to the text
+    
+    render_split_text("Move Down", 40, y_offset + 40, dark_brown, font_medium)
+    screen.blit(s_image, (40 + move_up_width + 10, y_offset + 40))  # Position the image next to the text
+    
+    render_split_text("Move Left", 40 + x_offset, y_offset, dark_brown, font_medium)
+    screen.blit(a_image, (40 + x_offset + move_up_width + 10, y_offset))  # Position the image next to the text
+    
+    render_split_text("Move Right", 40 + x_offset, y_offset + 40, dark_brown, font_medium)
+    screen.blit(d_image, (40 + x_offset + move_up_width + 10, y_offset + 40))  # Position the image next to the text
     
     # Draw the back button at the bottom left corner
-    screen.blit(back_button_size, (600, HEIGHT - back_button_size.get_height() +10))
+    screen.blit(back_button_size, (600, HEIGHT - back_button_size.get_height() + 10))
 
 def draw_slider(x, y, value, color, left_img, right_img):
     pygame.draw.line(screen, color, (x, y), (x + slider_length, y), slider_height)
