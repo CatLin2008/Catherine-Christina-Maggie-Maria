@@ -33,6 +33,11 @@ player_bullets = []
 bullet_speed = 10
 bullet_life = 200
 
+laser_on = False
+click = False
+
+dash = 1
+
 enemies = []
 enemies_rect = []
 enemy_health = 100
@@ -213,7 +218,15 @@ def check_powerup_click(mouse_x, mouse_y):
             elif laserPUP_counter > 0 and slot_rect.collidepoint(laserPUP_x, laserPUP_y):
                 laserPUP_counter -= 1 
 # ---------------------------
-# Functions
+# classes
+
+# class player:
+#     def__init__(self, x, y, speed, hp):
+#         self.x = x1
+#         self.y = y
+#         self.speed = speed
+#         self.hp = hp
+    
 running = True
 while running:
     mouse_x, mouse_y = pygame.mouse.get_pos()
@@ -229,7 +242,10 @@ while running:
                 click_x, click_y = event.pos
                 angle = calc_angle(player_x, player_y, mouse_x, mouse_y)
                 dx, dy = calc_velocity(bullet_speed, angle)
-                player_bullets.append([player_x, player_y, dx, dy, bullet_life])
+                click = True
+                if laser_on == False:
+                    player_bullets.append([player_x, player_y, dx, dy, bullet_life])
+
             check_powerup_click(mouse_x, mouse_y)
             if store_open: #code for purchasing the powerups in the store
                 if queen_in_store.collidepoint(event.pos): 
@@ -260,6 +276,9 @@ while running:
                         if slots:  #moving the new laser to inventory if not already their and was purchased
                                 new_slot = slots.pop(0)
                                 healthPUP_x, healthPUP_y = new_slot
+        elif event.type == pygame.MOUSEBUTTONUP:
+            click = False
+            laser_on = False
 
 
         elif event.type == pygame.QUIT:
@@ -269,25 +288,26 @@ while running:
     # All game math and comparisons happen here
     # mouse_x, mouse_y = pygame.mouse.get_pos()
 
-        
+    print(click)    
+    
     # WASD movement
     #!! taken from mrgallo site
     keys = pygame.key.get_pressed()
     if player_y > 0:
         if keys[119] == True:  # w
-            player_y -= 10
+            player_y -= 10 * dash
 
     if player_x > 0:
         if keys[97] == True:  # a
-            player_x -= 10
+            player_x -= 10 * dash
 
     if player_y < HEIGHT-player_height:
         if keys[115] == True:  # s
-            player_y += 10
+            player_y += 10 * dash
 
     if player_x < WIDTH-player_width:
         if keys[100] == True:  # d
-            player_x += 10
+            player_x += 10 * dash
 
       #adding a key press on E to open the store
     if keys[101]:  
@@ -315,6 +335,22 @@ while running:
     if enemy_health <= 0:
         points += enemy_kill
 
+    # LAZERS!!!!
+    if keys[108] == True: # l
+        laser_on = True
+    
+    player_vect = pygame.Vector2(player_x, player_y)
+    mouse_vect = pygame.Vector2(mouse_x, mouse_y)
+    diff = player_vect - mouse_vect
+    diff += player_vect
+    diff.scale_to_length(2000)
+
+    # dash
+    if keys[109] == True: # l
+        dash = 5
+    else:
+        dash = 1
+
     # Catherine Enemy beta system
 
     if keys[112] == True:  # p
@@ -341,15 +377,11 @@ while running:
 
         if enemy_to_player_dist != 0:
             if enemy_to_player_dist < 50:
-                e[0] += e[2]*2
-                e[1] += e[3]*2
+                e[0] += e[2]*3
+                e[1] += e[3]*3
             else:
                 e[0] += e[2]
                 e[1] += e[3]
-        if damage_cooldown > 0:
-            for _ in range(60):
-                e[0] -= e[2]*2
-                e[1] -= e[3]*2
             #add attack animation
         
         for b in player_bullets:
@@ -374,8 +406,6 @@ while running:
             damage_cooldown = 20
     elif damage_cooldown > 0:
         damage_cooldown -= 1
-
-    print(player_hp)
 
     if player_hp <= 0:
         print("dead")
@@ -514,8 +544,13 @@ while running:
             e_rect = pygame.Rect(e[0]-10, e[1]-10, 20, 20)
             pygame.draw.rect(screen, (255, 0, 0), e_rect)    
     
-        # bullet tragectory
-        pygame.draw.line(screen, (0, 0, 255), (player_x, player_y), (mouse_x, mouse_y), 1)
+        # laser!!!
+        if laser_on == True:
+            if click == True:
+                pygame.draw.line(screen, (255, 0, 0), (player_x, player_y), (mouse_x, mouse_y), 10)
+            else:
+                pygame.draw.line(screen, (0, 0, 255), (player_x, player_y), (diff), 1)
+
 
         # bullet
         for b in player_bullets:
