@@ -260,23 +260,16 @@ while running:
                     if c_collected > queenPUP_price:
                         c_collected -= queenPUP_price
                         queenPUP_counter += 1
-                        if slots:
-                            new_slot = slots.pop(0)
-                            queenPUP_x, queenPUP_y = new_slot
+                
                 if laser_in_store.collidepoint(event.pos):
                     if c_collected > laser_price:
                         c_collected -= laser_price
                         laserPUP_counter += 1
-                        if slots:
-                            new_slot = slots.pop(0)
-                            laserPUP_x, laserPUP_y = new_slot
+    
                 if rookPUP_in_store.collidepoint(event.pos):
                     if c_collected > rookPUP_price:
                         c_collected -= rookPUP_price
                         rookPUP_counter += 1
-                        if slots:
-                            new_slot = slots.pop(0)
-                            rookPUP_x, rookPUP_y = new_slot
                 if health_in_store.collidepoint(event.pos):
                     if c_collected > healthPUP_price:
                         c_collected -= healthPUP_price
@@ -331,14 +324,22 @@ while running:
             if selected_item == laserPUP:
                 laserPUP_counter += 1
                 laserPUP_x, laserPUP_y, laserPUP_counter = handle_powerup_collision(laserPUP_x, laserPUP_y, laserPUP_counter)
-
+                if slots: 
+                                new_slot = slots.pop(0)
+                                laserPUP_x, laserPUP_y = new_slot
             elif selected_item == healthPUP:
                 healthPUP_counter += 1 
                 healthPUP_x, healthPUP_y, healthPUP_counter = handle_powerup_collision(healthPUP_x, healthPUP_y, healthPUP_counter)
+                if slots:  #moving the new laser to inventory if not already their and was purchased
+                                new_slot = slots.pop(0)
+                                healthPUP_x, healthPUP_y = new_slot
 
             elif selected_item == rookPUP:
                 rookPUP_counter += 1
                 rookPUP_x, rookPUP_y, rookPUP_counter = handle_powerup_collision(rookPUP_x, rookPUP_y, rookPUP_counter)
+                if slots:  #moving the new laser to inventory if not already their and was purchased
+                            new_slot = slots.pop(0)
+                            rookPUP_x, rookPUP_y = new_slot
 
             elif selected_item == coin_image:
                 c_collected +=  1
@@ -397,13 +398,13 @@ while running:
             coins.remove(c)
             c_collected += 1
 
-    if queenPUP_y <= 600 or queenPUP_counter >= 1:
+    if queenPUP_y <= 600:
         queenPUP_x, queenPUP_y, queenPUP_counter = handle_powerup_collision(queenPUP_x, queenPUP_y, queenPUP_counter)
-    if healthPUP_y <= 600 or healthPUP_counter >= 1:
+    if healthPUP_y <= 600:
         healthPUP_x, healthPUP_y, healthPUP_counter = handle_powerup_collision(healthPUP_x, healthPUP_y, healthPUP_counter)
-    if rookPUP_y <= 600 or rookPUP_counter >=1 :
+    if rookPUP_y <= 600  :
         rookPUP_x, rookPUP_y, rookPUP_counter = handle_powerup_collision(rookPUP_x, rookPUP_y, rookPUP_counter)
-    if laserPUP_y <= 600 or laserPUP_counter >=1:
+    if laserPUP_y <= 600:
         laserPUP_x, laserPUP_y, laserPUP_counter = handle_powerup_collision(laserPUP_x, laserPUP_y, laserPUP_counter)
 
 
