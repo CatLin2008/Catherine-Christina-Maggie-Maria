@@ -86,8 +86,7 @@ enemy_kill = 200
 #queen powerup location
 queenPUP_x = random.randrange(0, 750)
 queenPUP_y = random.randrange(60, 500)
-queen_parameters = pygame.Rect(queenPUP_x, queenPUP_y, 90, 90)
-
+queen_visible = True 
 queenPUP_list = [
     pygame.Rect(queenPUP_x, queenPUP_y, 2, 5)
 ]
@@ -98,7 +97,7 @@ queenPUP_y2 = -1000
 #health powerup location
 healthPUP_x = random.randrange(0, 800)
 healthPUP_y = random.randrange(60, 500)
-health_parameters = pygame.Rect(healthPUP_x, healthPUP_y, 90, 90)
+heath_visible = True 
 healthPUP_list = [
     pygame.Rect(healthPUP_x, healthPUP_y, 2, 5)
 ]
@@ -110,7 +109,7 @@ healthPUP_y2 = -1000
 #laser powerup location
 laserPUP_x = random.randrange(0, 800)
 laserPUP_y = random.randrange(60, 500)
-laser_parameters = pygame.Rect(laserPUP_x, laserPUP_y, 90, 90)
+laser_visible = True 
 laserPUP_list = [
     pygame.Rect(laserPUP_x, laserPUP_y, 2, 5)
 ]
@@ -121,8 +120,7 @@ laserPUP_y2 = -1000
 #rook powerup location
 rookPUP_x = random.randrange(0, 800)
 rookPUP_y = random.randrange(60, 500)
-rook_parameters = pygame.Rect(rookPUP_x, rookPUP_y, 90, 90)
-
+rook_visible = True 
 rookPUP_list = [
     pygame.Rect(rookPUP_x, rookPUP_y, 2, 5)
 ]
@@ -252,29 +250,32 @@ while running:
             angle = calc_angle(player_x, player_y, mouse_x, mouse_y)
             dx, dy = calc_velocity(bullet_speed, angle)
             player_bullets.append([player_x, player_y, dx, dy, bullet_life])
-            if laserPUP_counter >= 1 and laserPUP.get_rect().collidepoint(event.pos):
-                laserPUP_counter -= 1
-                c_collected += 1
-            if queenPUP_counter >= 1 and queenPUP.get_rect().collidepoint(event.pos):
-                queenPUP_counter -= 1
-            if healthPUP_counter >= 1 and healthPUP.get_rect().collidepoint(event.pos):
-                healthPUP_counter -= 1
-            if rookPUP_counter >= 1 and rookPUP.get_rect().collidepoint(event.pos):
-                rookPUP_counter -= 1
-            #christina's code for the counters of parameters of the obejcts in the store and the cost of buying them would bring down counter
-
+        
+            #christina's code for the counters of parameters of the obejcts 
             if laserPUP_counter >= 1:
                 if laser_parameters.collidepoint(event.pos):
-                     laserPUP_counter -= 1
+                    laserPUP_counter -= 1
+                    if laserPUP_counter < 1: 
+                                laserPUP_x, laserPUP_y = -100, -100
+                                laserPUP_x2, laserPUP_y2 = -100, -100
             if queenPUP_counter >= 1:
                 if queen_parameters.collidepoint(event.pos):
                      queenPUP_counter -= 1
+                     if queenPUP_counter < 1: 
+                        queenPUP_x, queen_y = -100, -100
+                        queenPUP_x2, queen_y2 = -100, -100
             if healthPUP_counter >= 1:
                 if health_parameters.collidepoint(event.pos):
                      healthPUP_counter -= 1
+                     if healthPUP_counter < 1: 
+                        healthPUP_x, healthPUP_y = -100, -100
+                        healthPUP_x2, healthPUP_y2 = -100, -100
             if rookPUP_counter >= 1:
                 if rook_parameters.collidepoint(event.pos):
-                     rookPUP_counter -= 1
+                    rookPUP_counter -= 1
+                    if rookPUP_counter < 1: 
+                                rookPUP_x, rookPUP_y = -100, -100
+                                rookPUP_x2, rookPUP_y2 = -100, -100
             #if the store_open is true, then the coins collected go down in price
             if store_open:
                 if queen_in_store.collidepoint(event.pos):
@@ -286,8 +287,6 @@ while running:
                         elif slots: 
                             new_slot = slots.pop(0)
                             queenPUP_x2, queenPUP_y2 = new_slot
-                            if queenPUP_y > 600:
-                                queenPUP_x2, queenPUP_y2 = queenPUP_x, queenPUP_y
                 if laser_in_store.collidepoint(event.pos):
                     if c_collected > laser_price:
                         c_collected -= laser_price
@@ -297,8 +296,6 @@ while running:
                         elif slots: 
                             new_slot = slots.pop(0)
                             laserPUP_x2, laserPUP_y2 = new_slot
-                            if laserPUP_y > 600:
-                                laserPUP_x2, laserPUP_y2 = laserPUP_x, laserPUP_y
                 if rookPUP_in_store.collidepoint(event.pos):
                     if c_collected > rookPUP_price:
                         c_collected -= rookPUP_price
@@ -308,8 +305,6 @@ while running:
                         elif slots: 
                             new_slot = slots.pop(0)
                             rookPUP_x2, rookPUP_y2 = new_slot
-                            if rookPUP_y > 600:
-                                rookPUP_x2, rookPUP_y2 = rookPUP_x, rookPUP_y
                 if health_in_store.collidepoint(event.pos):
                     if c_collected > healthPUP_price:
                         c_collected -= healthPUP_price
@@ -319,14 +314,20 @@ while running:
                         elif slots and healthPUP_y < 600: 
                             new_slot = slots.pop(0)
                             healthPUP_x2, healthPUP_y2 = new_slot
-                            if healthPUP_y > 600:
-                                healthPUP_x2, healthPUP_y2 = healthPUP_x, healthPUP_y
+
+                    
                     
         if event.type == pygame.QUIT:
             running = False
 
+
     # GAME STATE UPDATES
     # All game math and comparisons happen here
+    #parameters so theyre always updated
+    rook_parameters = pygame.Rect(rookPUP_x, rookPUP_y, 90, 90)
+    laser_parameters = pygame.Rect(laserPUP_x, laserPUP_y, 90, 90)
+    queen_parameters = pygame.Rect(queenPUP_x, queenPUP_y, 90, 90)
+    health_parameters = pygame.Rect(healthPUP_x, healthPUP_y, 90, 90)
 
     # WASD movement
     #!! taken from mrgallo site
@@ -374,7 +375,6 @@ while running:
                 elif slots: 
                     new_slot = slots.pop(0)
                     laserPUP_x2, laserPUP_y2 = new_slot
-
             elif selected_item == healthPUP2:
                 healthPUP_counter += 1 
                 healthPUP_x2, healthPUP_y2, healthPUP_counter = handle_powerup_collision(healthPUP_x2, healthPUP_y2, healthPUP_counter)
@@ -387,7 +387,7 @@ while running:
                 rookPUP_counter += 1
                 rookPUP_x2, rookPUP_y2, rookPUP_counter = handle_powerup_collision(rookPUP_x2, rookPUP_y2, rookPUP_counter)
                 if rookPUP_y > 600:
-                                rookPUP_x2, rookPUP_y2 = rookPUP_x, rookPUP_y
+                        rookPUP_x2, rookPUP_y2 = rookPUP_x, rookPUP_y
                 elif slots:  
                     new_slot = slots.pop(0)
                     rookPUP_x2, rookPUP_y2 = new_slot
@@ -535,8 +535,9 @@ while running:
     screen.blit(queenPUP2, (queenPUP_x2, queenPUP_y2))
     screen.blit(laserPUP2, (laserPUP_x2, laserPUP_y2))
     screen.blit(rookPUP2, (rookPUP_x2, rookPUP_y2))
-        
-    
+
+
+
 #this is operating system for the chest to make the random things appear as well as the chest openings 
     for chest in closedchest_list:
         screen.blit(Closed_chest_img, (chest_x, chest_y))
@@ -571,7 +572,7 @@ while running:
             print_text(f"{laserPUP_counter}", text_font_smaller, (0,0,0), laserPUP_x +55, laserPUP_y + 10)
         elif laserPUP_y2 > 600: 
             print_text(f"{laserPUP_counter}", text_font_smaller, (0,0,0), laserPUP_x2 +55, laserPUP_y2 + 10)
-
+    
    
 #THIS IS ALL STORE
 
