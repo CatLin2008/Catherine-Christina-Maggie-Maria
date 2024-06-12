@@ -13,35 +13,33 @@ white_player = pygame.transform.scale(white_player, (player_width, player_height
 #queen power up image
 queenPUP = pygame.image.load("queen_powerup.png")
 queenPUP = pygame.transform.scale(queenPUP, (90, 90))
-
+queenPUP2 = pygame.transform.scale(queenPUP, (90, 90))
 #health power up image
 healthPUP = pygame.image.load("heartpup.png")
 healthPUP = pygame.transform.scale(healthPUP, (90, 90))
+healthPUP2 = pygame.transform.scale(healthPUP, (90, 90))
 
 #rook power up image
 rookPUP = pygame.image.load("rookpup.png")
 rookPUP = pygame.transform.scale(rookPUP, (90, 90))
+rookPUP2 = pygame.transform.scale(rookPUP, (90, 90))
 
 #laser power up image
 laserPUP = pygame.image.load("laserpup.png")
 laserPUP = pygame.transform.scale(laserPUP, (90, 90))
+laserPUP2 = pygame.transform.scale(laserPUP, (90, 90))
+coin_image = pygame.image.load('coin.png')
+coin_image = pygame.transform.scale(coin_image, (45, 50))
 
 Closed_chest_img = pygame.image.load("closed_chest.png")
 Closed_chest_img = pygame.transform.scale(Closed_chest_img, (115,115))
-
 full_chest_img = pygame.image.load("full_chest.png")
 full_chest_img = pygame.transform.scale(full_chest_img, (115,115))
-
-
 empty_chest_img = pygame.image.load("empty_chest.png")
 empty_chest_img = pygame.transform.scale(empty_chest_img, (115,115))
 
-chest_choice = [
-    pygame.image.load("rookpup.png"),
-    pygame.image.load("heartpup.png"),
-    pygame.image.load("laserpup.png"),
-    pygame.image.load("coin.png")] 
 
+chest_items = [laserPUP2, healthPUP2, rookPUP2, coin_image]
 
 pygame.init()
 
@@ -94,6 +92,8 @@ queenPUP_list = [
     pygame.Rect(queenPUP_x, queenPUP_y, 2, 5)
 ]
 queenPUP_counter = 0
+queenPUP_x2 = 1000
+queenPUP_y2 = -1000
 
 #health powerup location
 healthPUP_x = random.randrange(0, 800)
@@ -103,6 +103,9 @@ healthPUP_list = [
     pygame.Rect(healthPUP_x, healthPUP_y, 2, 5)
 ]
 healthPUP_counter = 0
+healthPUP_x2 = 1000
+healthPUP_y2 = -1000
+
 
 #laser powerup location
 laserPUP_x = random.randrange(0, 800)
@@ -112,6 +115,8 @@ laserPUP_list = [
     pygame.Rect(laserPUP_x, laserPUP_y, 2, 5)
 ]
 laserPUP_counter = 0
+laserPUP_x2 = 1000
+laserPUP_y2 = -1000
 
 #rook powerup location
 rookPUP_x = random.randrange(0, 800)
@@ -122,9 +127,9 @@ rookPUP_list = [
     pygame.Rect(rookPUP_x, rookPUP_y, 2, 5)
 ]
 rookPUP_counter = 0
+rookPUP_x2 = 1000
+rookPUP_y2 = -1000
 
-coin_image = pygame.image.load('coin.png')
-coin_image = pygame.transform.scale(coin_image, (45, 50))
 coins = [
     pygame.Rect(100, 255, 23, 23),
     pygame.Rect(600, 333, 23, 23)
@@ -135,15 +140,11 @@ coin_bar_height = 60
 coin_bar_width = 200
 coin_bar_color = (255, 215, 0)
 
-#chest parameters 
-chest_x = 500
-chest_y = 500
-chest_counter = 0 
-closedchest_list = [ 
-     pygame.Rect(chest_x, chest_y, 90,90)
-]
-emptychest_list = [ ]
-fullchest_list = [ ]
+# Chest parameters
+chest_x, chest_y = 500, 500
+closedchest_list = [pygame.Rect(chest_x, chest_y, 90, 90)]
+fullchest_list = []
+emptychest_list = []
 
 #inventory bar
 inventory_bar_height = 80
@@ -233,10 +234,8 @@ def handle_powerup_collision(powerup_x, powerup_y, counter):
             if new_slot:
                 counter += 1
                 powerup_x, powerup_y = new_slot
-
         return powerup_x, powerup_y, counter
 
-        
 # Functions
 running = True
 while running:
@@ -253,6 +252,17 @@ while running:
             angle = calc_angle(player_x, player_y, mouse_x, mouse_y)
             dx, dy = calc_velocity(bullet_speed, angle)
             player_bullets.append([player_x, player_y, dx, dy, bullet_life])
+            if laserPUP_counter >= 1 and laserPUP.get_rect().collidepoint(event.pos):
+                laserPUP_counter -= 1
+                c_collected += 1
+            if queenPUP_counter >= 1 and queenPUP.get_rect().collidepoint(event.pos):
+                queenPUP_counter -= 1
+            if healthPUP_counter >= 1 and healthPUP.get_rect().collidepoint(event.pos):
+                healthPUP_counter -= 1
+            if rookPUP_counter >= 1 and rookPUP.get_rect().collidepoint(event.pos):
+                rookPUP_counter -= 1
+            #christina's code for the counters of parameters of the obejcts in the store and the cost of buying them would bring down counter
+
             if laserPUP_counter >= 1:
                 if laser_parameters.collidepoint(event.pos):
                      laserPUP_counter -= 1
@@ -265,38 +275,53 @@ while running:
             if rookPUP_counter >= 1:
                 if rook_parameters.collidepoint(event.pos):
                      rookPUP_counter -= 1
-
+            #if the store_open is true, then the coins collected go down in price
             if store_open:
                 if queen_in_store.collidepoint(event.pos):
                     if c_collected > queenPUP_price:
                         c_collected -= queenPUP_price
-                        queenPUP_counter += 1
-                        if slots:
+                        queenPUP_counter += 1 
+                        if queenPUP_y > 600: 
+                            queenPUP_x2, queenPUP_y2 = queenPUP_x,queenPUP_y
+                        elif slots: 
                             new_slot = slots.pop(0)
-                            queenPUP_x, queenPUP_y = new_slot
+                            queenPUP_x2, queenPUP_y2 = new_slot
+                            if queenPUP_y > 600:
+                                queenPUP_x2, queenPUP_y2 = queenPUP_x, queenPUP_y
                 if laser_in_store.collidepoint(event.pos):
                     if c_collected > laser_price:
                         c_collected -= laser_price
                         laserPUP_counter += 1
-                        if slots:
+                        if laserPUP_y > 600: 
+                            laserPUP_x2, laserPUP_y2 = laserPUP_x, laserPUP_y
+                        elif slots: 
                             new_slot = slots.pop(0)
-                            laserPUP_x, laserPUP_y = new_slot
+                            laserPUP_x2, laserPUP_y2 = new_slot
+                            if laserPUP_y > 600:
+                                laserPUP_x2, laserPUP_y2 = laserPUP_x, laserPUP_y
                 if rookPUP_in_store.collidepoint(event.pos):
                     if c_collected > rookPUP_price:
                         c_collected -= rookPUP_price
                         rookPUP_counter += 1
-                        if slots:
+                        if rookPUP_y > 600: 
+                            rookPUP_x2, rookPUP_y2 = rookPUP_x, rookPUP_y
+                        elif slots: 
                             new_slot = slots.pop(0)
-                            rookPUP_x, rookPUP_y = new_slot
+                            rookPUP_x2, rookPUP_y2 = new_slot
+                            if rookPUP_y > 600:
+                                rookPUP_x2, rookPUP_y2 = rookPUP_x, rookPUP_y
                 if health_in_store.collidepoint(event.pos):
                     if c_collected > healthPUP_price:
                         c_collected -= healthPUP_price
                         healthPUP_counter += 1
-                        if slots:
+                        if healthPUP_y > 600: 
+                            healthPUP_x2, healthPUP_y2 = healthPUP_x, healthPUP_y
+                        elif slots and healthPUP_y < 600: 
                             new_slot = slots.pop(0)
-                            healthPUP_x, healthPUP_y = new_slot
-
-                        
+                            healthPUP_x2, healthPUP_y2 = new_slot
+                            if healthPUP_y > 600:
+                                healthPUP_x2, healthPUP_y2 = healthPUP_x, healthPUP_y
+                    
         if event.type == pygame.QUIT:
             running = False
 
@@ -327,16 +352,52 @@ while running:
         e_key_pressed = False
     
     #PRESS f to absorb the chest materials
-    if keys[102]:  
-        if not f_key_pressed:
-            f_key_pressed = True
-        if fullchest_list:
-            fullchest_list.pop()
-            emptychest_list.append(pygame.Rect(chest_x, chest_y, 90,90))
-            chest_item = random_chest_choice()
-    else:
-        f_key_pressed = False
+    player_rect = pygame.Rect(player_x, player_y, player_width, player_height)
+    for chest in closedchest_list:
+        if chest.colliderect(player_rect):
+            closedchest_list.remove(chest)
+            fullchest_list.append(pygame.Rect(chest_x, chest_y, 90, 90))
+            selected_item = random.choice(chest_items)
 
+    for chest in fullchest_list:
+        if keys[102]:  
+            if not f_key_pressed:
+                f_key_pressed = True
+            if fullchest_list:
+                fullchest_list.pop()
+                emptychest_list.append(pygame.Rect(chest_x, chest_y, 90, 90))
+            if selected_item == laserPUP2:
+                laserPUP_counter += 1
+                laserPUP_x2, laserPUP_y2, laserPUP_counter = handle_powerup_collision(laserPUP_x2, laserPUP_y2, laserPUP_counter)
+                if laserPUP_y > 600:
+                        laserPUP_x2, laserPUP_y2 = laserPUP_x, laserPUP_y
+                if slots: 
+                    new_slot = slots.pop(0)
+                    laserPUP_x2, laserPUP_y2 = new_slot
+
+            elif selected_item == healthPUP2:
+                healthPUP_counter += 1 
+                healthPUP_x2, healthPUP_y2, healthPUP_counter = handle_powerup_collision(healthPUP_x2, healthPUP_y2, healthPUP_counter)
+                if healthPUP_y > 600:
+                    healthPUP_x2, healthPUP_y2 = healthPUP_x, healthPUP_y
+                if slots: 
+                    new_slot = slots.pop(0)
+                    healthPUP_x2, healthPUP_y2 = new_slot
+            elif selected_item == rookPUP2:
+                rookPUP_counter += 1
+                rookPUP_x2, rookPUP_y2, rookPUP_counter = handle_powerup_collision(rookPUP_x2, rookPUP_y2, rookPUP_counter)
+                if rookPUP_y > 600:
+                                rookPUP_x2, rookPUP_y2 = rookPUP_x, rookPUP_y
+                if slots:  
+                    new_slot = slots.pop(0)
+                    rookPUP_x2, rookPUP_y2 = new_slot
+                    
+            elif selected_item == coin_image:
+                c_collected +=  1
+                if slots:
+                    slots.pop(0)  # Remove the slot if a coin is collected
+        else:
+            f_key_pressed = False
 
      # Catherine's bullet & point system
 
@@ -390,20 +451,24 @@ while running:
             coins.remove(c)
             c_collected += 1
 
+   #this is the code so that it doesnt collide and change spots when the sprite goes near the inventory box
     if queenPUP_y <= 600:
         queenPUP_x, queenPUP_y, queenPUP_counter = handle_powerup_collision(queenPUP_x, queenPUP_y, queenPUP_counter)
-    if healthPUP_y <= 600:
+        if queenPUP_y2 > 600 and  queenPUP_y > 600:
+            queenPUP_x, queenPUP_y = queenPUP_x2, queenPUP_y2
+    if healthPUP_y <= 600 :
         healthPUP_x, healthPUP_y, healthPUP_counter = handle_powerup_collision(healthPUP_x, healthPUP_y, healthPUP_counter)
+        if healthPUP_y2 > 600 and  healthPUP_y > 600:
+                healthPUP_x, healthPUP_y = healthPUP_x2, healthPUP_y2
     if rookPUP_y <= 600:
         rookPUP_x, rookPUP_y, rookPUP_counter = handle_powerup_collision(rookPUP_x, rookPUP_y, rookPUP_counter)
+        if rookPUP_y2 > 600  and rookPUP_y > 600:
+                rookPUP_x, rookPUP_y = rookPUP_x2, rookPUP_y2
     if laserPUP_y <= 600:
         laserPUP_x, laserPUP_y, laserPUP_counter = handle_powerup_collision(laserPUP_x, laserPUP_y, laserPUP_counter)
+        if laserPUP_y2 > 600  and laserPUP_y > 600:
+                laserPUP_x, laserPUP_y = laserPUP_x2, laserPUP_y2
 
-    for chest in closedchest_list: 
-         if chest.colliderect(player_rect): 
-            closedchest_list.remove(chest)
-            fullchest_list.append(pygame.Rect(chest_x, chest_y, 90,90))
-             
     # DRAWING
 
     # background
@@ -456,43 +521,56 @@ while running:
 #draw health potions
     for health_potions in healthPUP_list:
             screen.blit(healthPUP, (healthPUP_x, healthPUP_y))
-    
 #draw queen powerups 
     for queen_pups in queenPUP_list: 
         screen.blit(queenPUP, (queenPUP_x, queenPUP_y))
-
 #draw laser power ups    
     for laser_pups in laserPUP_list: 
         screen.blit(laserPUP, (laserPUP_x, laserPUP_y))
 #draw rook power ups
     for rook_pups in rookPUP_list: 
         screen.blit(rookPUP, (rookPUP_x, rookPUP_y))
+    
+    screen.blit(healthPUP2, (healthPUP_x2, healthPUP_y2))
+    screen.blit(queenPUP2, (queenPUP_x2, queenPUP_y2))
+    screen.blit(laserPUP2, (laserPUP_x2, laserPUP_y2))
+    screen.blit(rookPUP2, (rookPUP_x2, rookPUP_y2))
         
+    
+#this is operating system for the chest to make the random things appear as well as the chest openings 
     for chest in closedchest_list:
-        screen.blit(Closed_chest_img, (chest_x, chest_y) )
-
-    for full in fullchest_list:
-        screen.blit(full_chest_img, (chest_x, chest_y) )
-        print_text(f"Press F to Collect", text_font_smaller, (0, 0, 0), chest_x+10, chest_y)
-        #choice within the chest (chatgpt)
-        random_item = random.choice(chest_choice)
-        print(random_item)        
-
-    for empty in emptychest_list:
-        screen.blit(empty_chest_img, (chest_x, chest_y) )
-
+        screen.blit(Closed_chest_img, (chest_x, chest_y))
+    for chest in fullchest_list:
+        screen.blit(full_chest_img, (chest_x, chest_y))
+        if selected_item:
+            screen.blit(selected_item, (chest_x+10, chest_y+25))  # Draw the selected item below the chest
+        print_text("Press F to Collect", text_font_smaller, (0, 0, 0), chest_x + 10, chest_y)
+    for chest in emptychest_list:
+        screen.blit(empty_chest_img, (chest_x, chest_y))
     
 
-#coding for numbering how many powerups you pick up: COUNTER
 
+#coding for numbering how many powerups you pick up: COUNTER
     if queenPUP_counter >= 1:
-            print_text(f"{queenPUP_counter}", text_font_smaller, (0,0,0), queenPUP_x + 55, queenPUP_y +10)
+            if queenPUP_y > 600:  
+                print_text(f"{queenPUP_counter}", text_font_smaller, (0,0,0), queenPUP_x + 55, queenPUP_y +10)
+            elif queenPUP_y2 > 600:  
+                print_text(f"{queenPUP_counter}", text_font_smaller, (0,0,0), queenPUP_x2 + 55, queenPUP_y2 +10)
     if rookPUP_counter >= 1:
-            print_text(f"{rookPUP_counter}", text_font_smaller, (0,0,0), rookPUP_x + 55, rookPUP_y +10)
-    if healthPUP_counter >= 1:       
-         print_text(f"{healthPUP_counter}", text_font_smaller, (0,0,0), healthPUP_x + 55, healthPUP_y +10)
+            if rookPUP_y > 600:
+                print_text(f"{rookPUP_counter}", text_font_smaller, (0,0,0), rookPUP_x + 55, rookPUP_y +10)
+            elif rookPUP_y2 > 600:
+                print_text(f"{rookPUP_counter}", text_font_smaller, (0,0,0), rookPUP_x2 + 55, rookPUP_y2 +10)
+    if healthPUP_counter >= 1: 
+         if healthPUP_y >600:      
+            print_text(f"{healthPUP_counter}", text_font_smaller, (0,0,0), healthPUP_x + 55, healthPUP_y +10)
+         elif healthPUP_y2 > 600: 
+            print_text(f"{healthPUP_counter}", text_font_smaller, (0,0,0), healthPUP_x2 + 55, healthPUP_y2 +10)
     if laserPUP_counter >= 1:
-         print_text(f"{laserPUP_counter}", text_font_smaller, (0,0,0), laserPUP_x +55, laserPUP_y + 10)
+        if laserPUP_y >600:
+            print_text(f"{laserPUP_counter}", text_font_smaller, (0,0,0), laserPUP_x +55, laserPUP_y + 10)
+        elif laserPUP_y2 > 600: 
+            print_text(f"{laserPUP_counter}", text_font_smaller, (0,0,0), laserPUP_x2 +55, laserPUP_y2 + 10)
 
    
 #THIS IS ALL STORE
