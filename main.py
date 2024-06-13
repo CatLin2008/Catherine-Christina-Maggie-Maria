@@ -341,7 +341,7 @@ while running:
             closedchest_list.remove(chest)
             fullchest_list.append(pygame.Rect(chest_x, chest_y, 90, 90))
             selected_item = random.choice(chest_items)
-
+# this is the problematic code that doesn't run for some reason 
     for chest in fullchest_list:
         if keys[102]:  
             if not f_key_pressed:
