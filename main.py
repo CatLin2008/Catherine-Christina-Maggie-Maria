@@ -226,7 +226,7 @@ def check_powerup_click(mouse_x, mouse_y):
 #         self.y = y
 #         self.speed = speed
 #         self.hp = hp
-    
+
 running = True
 while running:
     mouse_x, mouse_y = pygame.mouse.get_pos()
@@ -289,7 +289,7 @@ while running:
     # mouse_x, mouse_y = pygame.mouse.get_pos()
 
     print(click)    
-    
+
     # WASD movement
     #!! taken from mrgallo site
     keys = pygame.key.get_pressed()
@@ -324,7 +324,7 @@ while running:
         b[0] += b[2]
         b[1] += b[3]
         b[4] -= 1
-        
+
     player_bullets_alive = []
     for b in player_bullets:
         if b[4] >= 0:
@@ -338,7 +338,7 @@ while running:
     # LAZERS!!!!
     if keys[108] == True: # l
         laser_on = True
-    
+
     player_vect = pygame.Vector2(player_x, player_y)
     mouse_vect = pygame.Vector2(mouse_x, mouse_y)
     diff = player_vect - mouse_vect
@@ -357,14 +357,14 @@ while running:
         for _ in range(1):
             e_x = random.randrange(0, WIDTH)
             e_y = random.randrange(0, HEIGHT)
-            
+
             enemy = [e_x, e_y, 0, 0, enemy_health] 
             enemies.append(enemy)
 
             e_rect = pygame.Rect(e_x-10, e_y-10, 20, 20)
             enemies_rect.append(e_rect)
 
-    
+
     enemies_alive = []
     e_rects = []
 
@@ -383,14 +383,14 @@ while running:
                 e[0] += e[2]
                 e[1] += e[3]
             #add attack animation
-        
+
         for b in player_bullets:
             b_rect = pygame.Rect(b[0]-2, b[1]-2, 4, 4)
             if b_rect.colliderect(e_rect):
                 e[4] -= 10
                 b[4] = -1
                 points += bullet_hit
-        
+
         if e[4] >= 0:
             enemies_alive.append(e)
 
@@ -415,7 +415,7 @@ while running:
     wave
 
 
-    
+
 
 
     #coins being collected 
@@ -538,18 +538,18 @@ while running:
 
         screen.blit(white_player, (player_x, player_y))
 
-    
+
         # dummy enemy
         for e in enemies:
             e_rect = pygame.Rect(e[0]-10, e[1]-10, 20, 20)
             pygame.draw.rect(screen, (255, 0, 0), e_rect)    
-    
+
         # laser!!!
         if laser_on == True:
             if click == True:
                 pygame.draw.line(screen, (255, 0, 0), (player_x, player_y), (mouse_x, mouse_y), 10)
             else:
-                pygame.draw.line(screen, (0, 0, 255), (player_x, player_y), (diff), 1)
+                pygame.draw.line(screen, (0, 0, 255), (player_vect), (diff), 1)
 
 
         # bullet
@@ -560,7 +560,7 @@ while running:
 
     # Points bar
         print_text(f"{points}", text_font, (0,0,0), 10, 10)
-    
+
     # waves
         print_text(f"WAVE {wave}", text_font, (0,0,0), WIDTH/2, 10)
 
@@ -587,7 +587,7 @@ while running:
     #draw health potions
         for health_potions in healthPUP_list:
             screen.blit(healthPUP, (healthPUP_x, healthPUP_y))
-    
+
     #draw queen powerups 
         for queen_pups in queenPUP_list: 
             screen.blit(queenPUP, (queenPUP_x, queenPUP_y))
@@ -613,16 +613,16 @@ while running:
 
         # if queenPUP_x == 190 and queenPUP_y == 620:
         #     print_text(f"{queenPUP_counter}", text_font_smaller, (0,0,0), 250, 630)
-        
+
         # if rookPUP_x == 285 and rookPUP_y == 640:
         #     print_text(f"{rookPUP_counter}", text_font_smaller, (0,0,0), 330, 630)
-        
+
         # if healthPUP_x == 370 and healthPUP_y == 640:
         #     print_text(f"{healthPUP_counter}", text_font_smaller, (0,0,0), 410, 630)
 
         # if laserPUP_x == 435 and laserPUP_y == 625:
         #     print_text(f"{laserPUP_counter}", text_font_smaller, (0,0,0), 490, 630)
-        
+
     #drawing the store and what they can purchase by pressing E
     if store_open:
         pygame.draw.rect(screen, store_colour, ((WIDTH - store_width) / 2, (HEIGHT - store_height) / 2, store_width, store_height))
@@ -651,7 +651,7 @@ while running:
         print_text(f"Rook Power Up", text_font_smaller, (0, 0, 0), og_purchase_x+425, og_purchase_y)
         screen.blit(coin_image, (og_purchase_x + 415, og_purchase_y+ +200))
         print_text(f"{rookPUP_price}", text_font, (0, 0, 0), og_purchase_x+470, og_purchase_y+210)
-        
+
         #health pup buy
         pygame.draw.rect(screen, (coin_colour), (og_purchase_x+ 600, og_purchase_y, purchase_slots_width, purchase_slots_height))
         screen.blit(healthPUP, (og_purchase_x + 630, og_purchase_y+ 80))
