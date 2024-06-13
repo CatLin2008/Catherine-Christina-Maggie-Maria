@@ -171,7 +171,10 @@ health_in_store = pygame.Rect(625, og_purchase_y, purchase_slots_width, purchase
 pygame.font.get_default_font()
 scene_title_font = pygame.font.SysFont('Courier New', 37)
 instruction_title_font = pygame.font.SysFont('Courier New', 16)
+dead_title_font = pygame.font.SysFont('Courier New', 20)
 current_screen = 0
+
+#buttons
 startx = 180
 starty = 190
 exitx = 540
@@ -186,9 +189,14 @@ backx = 654
 backy = 24
 click_x = 0
 click_y = 0
+menu_x = 208 
+menu_y =348
+
+#scene boolenans
 clicked = False
 pause_open = False
 menu_open = True
+dead_open = False
 
 #______________________________________________
 # Function to get the next available slot
@@ -221,7 +229,6 @@ running = True
 while running:
     mouse_x, mouse_y = pygame.mouse.get_pos()
 
-
     # EVENT HANDLING
     for event in pygame.event.get():
         if event.type == KEYDOWN:
@@ -230,6 +237,7 @@ while running:
         elif event.type == pygame.MOUSEBUTTONDOWN: #vectors for bullet
           if event.button == 1:  # Left mouse button
             click_x, click_y = event.pos
+            print(click_x, click_y)
             angle = calc_angle(player_x + player_center[0], player_y + player_center[1], mouse_x, mouse_y)
             dx, dy = calc_velocity(bullet_speed, angle)
             click = True
@@ -404,7 +412,7 @@ while running:
         spawn_chest = True
 
 
-    print(f"wave {wave}, spawn {e_spawn_rate} enemies, spawn chest {spawn_chest}")
+    # print(f"wave {wave}, spawn {e_spawn_rate} enemies, spawn chest {spawn_chest}")
 
     spawn_chest = False
 
@@ -511,7 +519,7 @@ while running:
     player_hitbox.topleft = (player_x, player_y)
 
     if damage_cooldown <= 0:
-        if player_hitbox.collidelist(e_rects) >= 0:
+        if player_hitbox.collidelist(e_rects) >= 0 and (pause_open == False):
             player_hp -= 10
             damage_cooldown = 20
     elif damage_cooldown > 0:
@@ -519,6 +527,7 @@ while running:
 
     if player_hp <= 0:
         print("dead")
+        dead_open = True
 
 
 
@@ -654,8 +663,8 @@ while running:
 
         chest_items = [laserPUP2, healthPUP2, rookPUP2, coin_image]
         #font 
-        text_font = pygame.font.SysFont(None, 40, bold = True)
-        text_font_smaller = pygame.font.SysFont(None, 20, bold = True)
+        text_font = pygame.font.SysFont('Courier New', 40, bold = True)
+        text_font_smaller = pygame.font.SysFont('Courier New', 20, bold = True)
 
          # background
         screen.fill((255, 255, 255))  # always the first drawing command
@@ -836,14 +845,22 @@ while running:
 
         #going make to game after clicking the back button in the pause menu
         if (click_x>=backx and click_x<=backx+80) and (click_y>=backy and click_y<=backy+30) and clicked == False:
-            print("Back Button CLicked")
+            # print("Back Button CLicked")
             pause_open = False
 
+    if dead_open == True:
+        pygame.draw.rect(screen, (232, 183, 199), (100, 67,621,491))
+        dead_title = dead_title_font.render('You are dead.Try again?', True, (222, 27, 113))
+        screen.blit(dead_title, (115, 152))
 
-
-
-
-
+        menubutton = pygame.image.load('menubutton.png')
+        smallmenubutton = pygame.transform.scale(menubutton, (90, 40))
+        screen.blit(smallmenubutton,(208, 348))
+        if (click_x>=menu_x and click_x<=menu_x+70) and (click_y>=menu_y and click_y<=menu_y+30) and clicked == False:
+            player_hp = 100
+            dead_open = False
+            menu_open = True
+            
     # Must be the last two lines
     # of the game loop
     pygame.display.flip()
