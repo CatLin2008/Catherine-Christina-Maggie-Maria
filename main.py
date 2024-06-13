@@ -59,7 +59,6 @@ text_font_smaller = pygame.font.SysFont(None, 20, bold = True)
 #queen powerup location
 queenPUP_x = random.randrange(0, 750)
 queenPUP_y = random.randrange(60, 500)
-queen_visible = True 
 queenPUP_list = [
     pygame.Rect(queenPUP_x, queenPUP_y, 2, 5)
 ]
@@ -70,7 +69,6 @@ queenPUP_y2 = -1000
 #health powerup location
 healthPUP_x = random.randrange(0, 800)
 healthPUP_y = random.randrange(60, 500)
-heath_visible = True 
 healthPUP_list = [
     pygame.Rect(healthPUP_x, healthPUP_y, 2, 5)
 ]
@@ -93,7 +91,6 @@ laserPUP_y2 = -1000
 #rook powerup location
 rookPUP_x = random.randrange(0, 800)
 rookPUP_y = random.randrange(60, 500)
-rook_visible = True 
 rookPUP_list = [
     pygame.Rect(rookPUP_x, rookPUP_y, 2, 5)
 ]
@@ -161,9 +158,6 @@ queen_in_store = pygame.Rect(og_purchase_x, og_purchase_y, purchase_slots_width,
 laser_in_store = pygame.Rect(225, og_purchase_y, purchase_slots_width, purchase_slots_height)
 rookPUP_in_store = pygame.Rect(425, og_purchase_y, purchase_slots_width, purchase_slots_height)
 health_in_store = pygame.Rect(625, og_purchase_y, purchase_slots_width, purchase_slots_height)
-
-#chatgpt
-full_slots = [False] * len(slots)
 
 #Maggie variables in main menu
 pygame.font.get_default_font()
