@@ -382,13 +382,13 @@ while running:
                         elif slots and healthPUP_y < 600: 
                             new_slot = slots.pop(0)
                             healthPUP_x2, healthPUP_y2 = new_slot
-            if current_screen == 1:
+            if settings_screen == True:
                 x, y = event.pos
                 game_mode_x = 250  # Moved to the right
                 for mode in game_modes:
                         if game_mode_x <= x <= game_mode_x + checkbox_size and 160 <= y <= 160 + checkbox_size:
-                            settings['game_mode'] = mode
-                            selected_option = f"game_mode_{mode}"
+                            settings['game_modes'] = mode
+                            selected_option = f"game_modes_{mode}"
                             save_settings(settings)
                         game_mode_x += checkbox_size + checkbox_margin
                 slider_x = (WIDTH - slider_length) // 2
@@ -796,7 +796,7 @@ while running:
                 mode_text_y = 130
                 checkbox_y = 160
                 render_text(mode.capitalize(), game_mode_x, mode_text_y, dark_brown)
-                draw_checkbox(game_mode_x, checkbox_y, mode == settings['game_mode'])
+                draw_checkbox(game_mode_x, checkbox_y, mode == settings['game_modes'])
                 game_mode_x += checkbox_size + checkbox_margin
 
             render_text("Volume Settings", 20, 250, black, font_medium) 
