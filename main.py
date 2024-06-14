@@ -1,8 +1,7 @@
-# you can delete this file lol
 
 # pygame template
 
-import pygame, sys, math, random
+import pygame, sys, math, random, json
 from pygame.locals import K_ESCAPE, KEYDOWN, QUIT, K_RIGHT, K_LEFT, MOUSEBUTTONDOWN
 #__________________________________
 pygame.init()
@@ -35,6 +34,7 @@ damage_cooldown = 0
 player_bullets = []
 bullet_speed = 15
 bullet_life = 200
+
 
 laser_on = False
 click = False
@@ -206,6 +206,78 @@ pause_open = False
 menu_open = True
 dead_open = False
 
+
+
+# MARIIanitial variables
+
+
+font_small = pygame.font.SysFont('Fira Sans Extra Condensed', 30)
+font_medium = pygame.font.SysFont('Fira Sans Extra Condensed', 40)
+font_large = pygame.font.SysFont('Fira Sans Extra Condensed', 50)
+dark_brown = 139, 69, 19
+tan = 210, 180, 140
+black = 0, 0, 0
+
+# Slider properties
+slider_length = 400
+slider_height = 5
+slider_radius = 10
+
+# Checkbox properties
+checkbox_size = 30
+checkbox_margin = 150  
+
+# Load checkbox tick image
+checkmark = pygame.transform.scale(pygame.image.load('tick.png'), (checkbox_size, checkbox_size))
+
+# Load and scale slider images
+minus_sign = pygame.transform.scale(pygame.image.load('minus_sign.png'), (80,80))
+plus_sign = pygame.transform.scale(pygame.image.load('plus_sign.png'), (80,80))
+
+
+# back button
+back_button = pygame.transform.scale(pygame.image.load('backbutton.png'), (200, 200))  
+back_button_x = WIDTH - 200
+back_button_y = HEIGHT - 200 + 10
+back_button_width = 200
+back_button_height = 200
+back_button_rect = pygame.Rect(back_button_x, back_button_y, back_button_width, back_button_height)
+
+# Load and scale keybind images
+w_image = pygame.transform.scale(pygame.image.load('w_image.png'), (30, 30))
+s_image = pygame.transform.scale(pygame.image.load('s_image.png'), (30, 30))
+a_image = pygame.transform.scale(pygame.image.load('a_image.png'), (30, 30))
+d_image = pygame.transform.scale(pygame.image.load('d_image.png'), (30, 30))
+
+
+
+# Initial settings
+settings = {
+    "game_modes": ["easy", "medium", "hard"],
+    "volume": {
+        "sfx": 0,  
+        "music": 0  
+    },
+    "keybinds": {
+        "move up": "W",
+        "move down": "S",
+        "move left": "A",
+        "move right": "D",
+    }
+}
+def load_settings():
+    with open('settings.json', 'r') as file:
+        return json.load(file)
+settings_screen = False
+selected_option = None
+game_modes = ["easy", "medium", "hard"]
+settings = load_settings()
+
+pygame.mixer.init()
+pygame.mixer.music.load('background_music.mp3') 
+pygame.mixer.music.set_volume(settings['volume']['music'] / 100)
+pygame.mixer.music.play(-1)
+coin_sound = pygame.mixer.Sound('coinsound.mp3')
 #______________________________________________
 # Function to get the next available slot
 
@@ -232,7 +304,14 @@ def handle_powerup_collision(powerup_x, powerup_y, counter):
                 powerup_x, powerup_y = new_slot
         return powerup_x, powerup_y, counter
 # ---------------------------
-# Functions
+#MARIA FUNCTIONS
+
+
+#--------------------------
+
+
+
+
 running = True
 while running:
     mouse_x, mouse_y = pygame.mouse.get_pos()
@@ -315,13 +394,60 @@ while running:
                         elif slots and healthPUP_y < 600: 
                             new_slot = slots.pop(0)
                             healthPUP_x2, healthPUP_y2 = new_slot
-
-        elif event.type == pygame.MOUSEBUTTONUP:
-            click = False
-            laser_on = False
-
-        elif event.type == pygame.QUIT:
+    if settings_screen == True:
+        if event.type == pygame.QUIT:
             running = False
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            x, y = event.pos
+            slider_x = (WIDTH - slider_length) // 2
+
+            # Check SFX volume control
+            if 350 - slider_radius <= y <= 350 + slider_radius:
+                if x <= slider_x:
+                    settings['volume']['sfx'] = max(settings['volume']['sfx'] - 1, 0)
+                elif x >= slider_x + slider_length:
+                    settings['volume']['sfx'] = min(settings['volume']['sfx'] + 1, 100)
+                save_settings(settings)
+
+                coin_sound.set_volume(settings['volume']['sfx'] / 100)
+                coin_sound.play()
+            # Check Music volume control
+            elif 450 - slider_radius <= y <= 450 + slider_radius:
+                if x <= slider_x:
+                    settings['volume']['music'] = max(settings['volume']['music'] - 1, 0)
+                elif x >= slider_x + slider_length:
+                    settings['volume']['music'] = min(settings['volume']['music'] + 1, 100)
+                pygame.mixer.music.set_volume(settings['volume']['music'] / 100)
+                save_settings(settings)
+
+            # Check game mode selection
+            game_mode_x = 250
+            for mode in game_modes:
+                if game_mode_x <= x <= game_mode_x + checkbox_size and 160 <= y <= 160 + checkbox_size:
+                    settings['game_modes'] = mode
+                    selected_option = f"game_modes_{mode}"
+                    save_settings(settings)
+                game_mode_x += checkbox_size + checkbox_margin
+        if event.type == pygame.KEYDOWN:
+            if selected_option and selected_option.startswith("game_mode"):
+                if event.key in [pygame.K_LEFT, pygame.K_RIGHT]:
+                    current_mode_index = game_modes.index(settings['game_mode'])
+                    settings['game_mode'] = game_modes[(current_mode_index + 1) % len(game_modes)]
+                    save_settings(settings)
+        if (click_x >= back_button_x and click_x <= back_button_x + back_button_width) and (click_y >= back_button_y and click_y <= back_button_y + back_button_height) and not clicked:
+                print("Back Button Clicked")
+                menu_open = True
+                settings_screen = False
+                
+            
+
+
+    elif event.type == pygame.MOUSEBUTTONUP:
+        click = False
+        laser_on = False
+
+    elif event.type == pygame.QUIT:
+        running = False
 
 
     # GAME STATE UPDATES
@@ -648,16 +774,101 @@ while running:
 
         elif (click_x >= settingx and click_x <= settingx +40) and (click_y>=settingy and click_y<=settingy+40) and clicked == False:
             print("Settings Button Clicked")
-            current_screen = 1
+            settings_screen = True
 
 
     # Scene 2 (Instructions/setting screen) MARIA ADD UR STUFF HERE
-    elif current_screen == 1:
+    if settings_screen == True:
+        screen.fill(tan)
+        
+        with open("settings.json", "w") as file:
+            json.dump(settings, file)
+
+        
+        def save_settings(settings):
+            with open('settings.json', 'w') as file:
+                json.dump(settings, file)
 
 
-        screen.fill((224, 202, 211)) 
-        scene_title = scene_title_font.render('Instructions Screen', True, (242, 17, 109))
-        screen.blit(scene_title, (90, 0))
+        def render_centered_text(text, font, color, screen, center_x, center_y):
+            text_surface = font.render(text, True, color)
+            text_rect = text_surface.get_rect()
+            text_rect.center = (center_x, center_y)
+            screen.blit(text_surface, text_rect)
+
+        def render_text(text, x, y, color=dark_brown, font=font_small):
+            text_surface = font.render(text, True, color)
+            screen.blit(text_surface, (x, y))
+            
+        def draw_slider(x, y, value, color, left_img, right_img):
+            pygame.draw.line(screen, color, (x, y), (x + slider_length, y), slider_height)
+            dot_x = x + (value / 100) * slider_length
+            pygame.draw.circle(screen, color, (int(dot_x), y), slider_radius)
+
+    
+            screen.blit(left_img, (x - left_img.get_width() - 45, y - left_img.get_height() // 2))
+            screen.blit(right_img, (x + slider_length + 50, y - right_img.get_height() // 2))
+
+
+        def display(screen, settings, selected_option):
+            screen.fill(tan)
+            render_centered_text("PREFERENCES", font_large, black, screen, WIDTH // 2, HEIGHT - 650)
+
+            render_text("Game Mode", 20, 150, black, font_medium)
+            game_mode_x = 250
+            for mode in game_modes:
+                mode_text_y = 130
+                checkbox_y = 160
+                render_text(mode.capitalize(), game_mode_x, mode_text_y, dark_brown)
+                draw_checkbox(game_mode_x, checkbox_y, mode == settings['game_modes'])
+                game_mode_x += checkbox_size + checkbox_margin
+
+            render_text("Volume Settings", 20, 250, black, font_medium)
+
+            # Draw sliders and plus/minus buttons
+            draw_slider((WIDTH - slider_length) // 2, 350, settings['volume']['sfx'], black, minus_sign, plus_sign)
+            draw_slider((WIDTH - slider_length) // 2, 450, settings['volume']['music'], black, minus_sign, plus_sign)
+
+            # Draw slider labels
+            render_centered_text("SFX", font_medium, dark_brown, screen, WIDTH // 2, 310)
+            render_centered_text("Music", font_medium, dark_brown, screen, WIDTH // 2, 410)
+
+            render_text("Keybinds", 20, 500, black, font_medium)
+            y_offset = 550
+            x_offset = 300
+            move_up_width = font_medium.size("move up")[0]
+
+            render_text("Move Up", 40, y_offset, dark_brown, font_small)
+            screen.blit(w_image, (40 + move_up_width + 10, y_offset))
+
+            render_text("Move Down", 40, y_offset + 40, dark_brown, font_small)
+            screen.blit(s_image, (40 + move_up_width + 10, y_offset + 40))
+
+            render_text("Move Left", 40 + x_offset, y_offset, dark_brown, font_small)
+            screen.blit(a_image, (40 + x_offset + move_up_width + 10, y_offset))
+
+            render_text("Move Right", 40 + x_offset, y_offset + 40, dark_brown, font_small)
+            screen.blit(d_image, (40 + x_offset + move_up_width + 10, y_offset + 40))
+
+            # Draw the back button at the bottom left corner
+            screen.blit(back_button, (WIDTH - 200, HEIGHT - 200 + 10))
+
+        def draw_checkbox(x, y, checked):
+            pygame.draw.rect(screen, black, (x, y, checkbox_size, checkbox_size), 4)  # Thicker line
+            if checked:
+                screen.blit(checkmark, (x, y))
+
+        settings = load_settings()
+        selected_option = None
+        game_modes = ["easy", "medium", "hard"]
+        display(screen, settings, selected_option)
+         
+
+        
+        
+                
+        
+        
 
     # Scene 3 (Game)
     elif current_screen == 2:
