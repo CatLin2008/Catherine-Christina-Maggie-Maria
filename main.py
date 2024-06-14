@@ -1,3 +1,5 @@
+# you can delete this file lol
+
 # pygame template
 
 import pygame, sys, math, random
@@ -31,7 +33,7 @@ player_center = [(player_width / 2), (player_height / 2)]
 damage_cooldown = 0
 
 player_bullets = []
-bullet_speed = 10
+bullet_speed = 15
 bullet_life = 200
 
 laser_on = False
@@ -46,8 +48,8 @@ dash_cd = 120
 
 enemies = []
 enemies_rect = []
-enemy_health = 100
-enemy_speed = 1
+enemy_health = 50
+enemy_speed = 2
 b_x = 0
 b_y = 0
 e_colour = (0,255,0)
@@ -484,7 +486,7 @@ while running:
             dash_on = False
             dash_life = 30
 
-    print(laser_cd)
+
     # Catherine Enemy system
 
     if clear == True and tutorial == False:  
@@ -530,8 +532,12 @@ while running:
                 e[4] -= 5
                 points += 1
 
-        if e[4] >= 0:
+        if e[4] > 0:
             enemies_alive.append(e)
+        elif e[4] == 0:
+            for _ in range(3):
+                e_coins = pygame.Rect(e[0], e[1], 23, 23)
+                coins.append(e_coins) 
 
     enemies = enemies_alive
 
