@@ -234,8 +234,13 @@ checkmark = pygame.transform.scale(pygame.image.load('tick.png'), (checkbox_size
 minus_sign = pygame.transform.scale(pygame.image.load('minus_sign.png'), (80,80))
 plus_sign = pygame.transform.scale(pygame.image.load('plus_sign.png'), (80,80))
 
-# Load and scale the back button image
-back_button = pygame.transform.scale(pygame.image.load('backbutton.png'), (200, 200))  # Adjust the size as needed
+# back button
+back_button = pygame.transform.scale(pygame.image.load('backbutton.png'), (200, 200))  
+back_button_x = WIDTH - 200
+back_button_y = HEIGHT - 200 + 10
+back_button_width = 200
+back_button_height = 200
+back_button_rect = pygame.Rect(back_button_x, back_button_y, back_button_width, back_button_height)
 
 # Load and scale keybind images
 w_image = pygame.transform.scale(pygame.image.load('w_image.png'), (30, 30))
@@ -382,49 +387,56 @@ while running:
                         elif slots and healthPUP_y < 600: 
                             new_slot = slots.pop(0)
                             healthPUP_x2, healthPUP_y2 = new_slot
-            if settings_screen == True:
-                x, y = event.pos
-                game_mode_x = 250  # Moved to the right
-                for mode in game_modes:
-                        if game_mode_x <= x <= game_mode_x + checkbox_size and 160 <= y <= 160 + checkbox_size:
-                            settings['game_modes'] = mode
-                            selected_option = f"game_modes_{mode}"
-                            save_settings(settings)
-                        game_mode_x += checkbox_size + checkbox_margin
-                slider_x = (WIDTH - slider_length) // 2
-                if 350 - slider_radius <= y <= 350 + slider_radius and slider_x <= x <= slider_x + slider_length:
-                    dragging_sfx = True
-                elif 450 - slider_radius <= y <= 450 + slider_radius and slider_x <= x <= slider_x + slider_length:
-                    dragging_music = True
-                elif event.type == pygame.MOUSEBUTTONUP:
-                    dragging_sfx = False
-                    dragging_music = False
-                elif event.type == pygame.MOUSEMOTION:
-                    if dragging_sfx:
-                            x, y = event.pos
-                            new_value = min(max((x - slider_x) / slider_length * 100, 0), 100)
-                            settings['volume']['sfx'] = int(new_value)
-                            save_settings(settings)
-                    elif dragging_music:
-                            x, y = event.pos
-                            new_value = min(max((x - slider_x) / slider_length * 100, 0), 100)
-                            settings['volume']['music'] = int(new_value)
-                            pygame.mixer.music.set_volume(settings['volume']['music'] / 100)
-                            save_settings(settings)
-                elif event.type == pygame.KEYDOWN:
-                        if selected_option and selected_option.startswith("game_mode"):
-                            if event.key in [pygame.K_LEFT, pygame.K_RIGHT]:
-                                current_mode_index = game_modes.index(settings['game_mode'])
-                                settings['game_mode'] = game_modes[(current_mode_index + 1) % len(game_modes)]
-                                save_settings(settings)
-
-
+    if settings_screen == True:
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            x, y = event.pos
+            game_mode_x = 250
+        for mode in game_modes:
+                if game_mode_x <= x <= game_mode_x + checkbox_size and 160 <= y <= 160 + checkbox_size:
+                    settings['game_modes'] = mode
+                    selected_option = f"game_modes_{mode}"
+                    save_settings(settings)
+                game_mode_x += checkbox_size + checkbox_margin
+        slider_x = (WIDTH - slider_length) // 2
+        if 350 - slider_radius <= y <= 350 + slider_radius and slider_x <= x <= slider_x + slider_length:
+            dragging_sfx = True
+        elif 450 - slider_radius <= y <= 450 + slider_radius and slider_x <= x <= slider_x + slider_length:
+            dragging_music = True
         elif event.type == pygame.MOUSEBUTTONUP:
-            click = False
-            laser_on = False
+            dragging_sfx = False
+            dragging_music = False
+        elif event.type == pygame.MOUSEMOTION:
+            if dragging_sfx:
+                x, y = event.pos
+                new_value = min(max((x - slider_x) / slider_length * 100, 0), 100)
+                settings['volume']['sfx'] = int(new_value)
+                save_settings(settings)
+            elif dragging_music:
+                x, y = event.pos
+                new_value = min(max((x - slider_x) / slider_length * 100, 0), 100)
+                settings['volume']['music'] = int(new_value)
+                pygame.mixer.music.set_volume(settings['volume']['music'] / 100)
+                save_settings(settings)
+        elif event.type == pygame.KEYDOWN:
+            if selected_option and selected_option.startswith("game_mode"):
+                if event.key in [pygame.K_LEFT, pygame.K_RIGHT]:
+                    current_mode_index = game_modes.index(settings['game_mode'])
+                    settings['game_mode'] = game_modes[(current_mode_index + 1) % len(game_modes)]
+                    save_settings(settings)
+        if (click_x >= back_button_x and click_x <= back_button_x + back_button_width) and (click_y >= back_button_y and click_y <= back_button_y + back_button_height) and not clicked:
+                print("Back Button Clicked")
+                menu_open = True
+                settings_screen = False
+                
+            
 
-        elif event.type == pygame.QUIT:
-            running = False
+
+    elif event.type == pygame.MOUSEBUTTONUP:
+        click = False
+        laser_on = False
+
+    elif event.type == pygame.QUIT:
+        running = False
 
 
     # GAME STATE UPDATES
@@ -844,6 +856,10 @@ while running:
         pygame.mixer.music.set_volume(settings['volume']['music'] / 100)
         pygame.mixer.music.play(-1) 
 
+        
+        
+                
+        
         
 
     # Scene 3 (Game)
