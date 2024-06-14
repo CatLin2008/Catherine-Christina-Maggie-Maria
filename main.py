@@ -1,8 +1,7 @@
-# you can delete this file lol
 
 # pygame template
 
-import pygame, sys, math, random
+import pygame, sys, math, random, json
 from pygame.locals import K_ESCAPE, KEYDOWN, QUIT, K_RIGHT, K_LEFT, MOUSEBUTTONDOWN
 #__________________________________
 pygame.init()
@@ -29,28 +28,13 @@ player_height = 115
 white_player = pygame.image.load("white-chess-piece.png").convert_alpha()
 player_hp = 100
 player_center = [(player_width / 2), (player_height / 2)]
-#queen power up image
-queenPUP = pygame.image.load("queen_powerup.png")
-queenPUP = pygame.transform.scale(queenPUP, (90, 90))
-        #health power up image
-healthPUP = pygame.image.load("heartpup.png")
-healthPUP = pygame.transform.scale(healthPUP, (90, 90))
-
-#rook power up image
-rookPUP = pygame.image.load("rookpup.png")
-rookPUP = pygame.transform.scale(rookPUP, (90, 90))
-
-#laser power up image
-laserPUP = pygame.image.load("laserpup.png")
-laserPUP = pygame.transform.scale(laserPUP, (90, 90))
-coin_image = pygame.image.load('coin.png')
-coin_image = pygame.transform.scale(coin_image, (45, 50))
 
 damage_cooldown = 0
 
 player_bullets = []
 bullet_speed = 15
 bullet_life = 200
+
 
 laser_on = False
 click = False
@@ -87,7 +71,22 @@ wave_cd = 180
 #font 
 text_font = pygame.font.SysFont(None, 40, bold = True)
 text_font_smaller = pygame.font.SysFont(None, 20, bold = True)
+#queen power up image
+queenPUP = pygame.image.load("queen_powerup.png")
+queenPUP = pygame.transform.scale(queenPUP, (90, 90))
+        #health power up image
+healthPUP = pygame.image.load("heartpup.png")
+healthPUP = pygame.transform.scale(healthPUP, (90, 90))
 
+#rook power up image
+rookPUP = pygame.image.load("rookpup.png")
+rookPUP = pygame.transform.scale(rookPUP, (90, 90))
+
+#laser power up image
+laserPUP = pygame.image.load("laserpup.png")
+laserPUP = pygame.transform.scale(laserPUP, (90, 90))
+coin_image = pygame.image.load('coin.png')
+coin_image = pygame.transform.scale(coin_image, (45, 50))
 
 queenPUP_counter = 0
 queenPUP_x = 1000
@@ -111,14 +110,14 @@ coins = [
     pygame.Rect(random.randrange(125, 800), random.randrange(600), 23, 23),
     pygame.Rect(random.randrange(125, 800), random.randrange(600), 23, 23)
 ]
-c_collected = 100
+c_collected = 0
 #coin bar
 coin_bar_height = 60
 coin_bar_width = 200
 coin_bar_color = (255, 215, 0)
 
 # Chest parameters
-chest_x, chest_y = 500, 500
+chest_x, chest_y = (random.randrange(50,700)), random.randrange(125, 600)
 closedchest_list = [pygame.Rect(chest_x, chest_y, 90, 90)]
 fullchest_list = []
 emptychest_list = []
@@ -148,12 +147,11 @@ store_width = 800
 store_height = 700
 store_colour = (92, 64, 51)
 coin_colour = (196, 164, 132)
-purchase_slots_width = 200
+purchase_slots_width = 150
 purchase_slots_height = 250 
 og_purchase_x = 25
 og_purchase_y = 200
 laser_price = 10
-queenPUP_price = 30
 rookPUP_price = 20 
 healthPUP_price = 20
 
@@ -203,6 +201,71 @@ rook_powerup_activated = False
 health_powerup_activated = False
 chest_number = random.randrange(0,100)
 
+# MARIIanitial variables
+font_small = pygame.font.SysFont('Fira Sans Extra Condensed', 30)
+font_medium = pygame.font.SysFont('Fira Sans Extra Condensed', 40)
+font_large = pygame.font.SysFont('Fira Sans Extra Condensed', 50)
+dark_brown = 139, 69, 19
+tan = 210, 180, 140
+black = 0, 0, 0
+
+# Slider properties
+slider_length = 400
+slider_height = 5
+slider_radius = 10
+
+# Checkbox properties
+checkbox_size = 30
+checkbox_margin = 150  
+
+# Load checkbox tick image
+checkmark = pygame.transform.scale(pygame.image.load('tick.png'), (checkbox_size, checkbox_size))
+
+# Load and scale slider images
+minus_sign = pygame.transform.scale(pygame.image.load('minus_sign.png'), (80,80))
+plus_sign = pygame.transform.scale(pygame.image.load('plus_sign.png'), (80,80))
+
+
+# back button
+back_button = pygame.transform.scale(pygame.image.load('backbutton.png'), (200, 200))  
+back_button_x = WIDTH - 200
+back_button_y = HEIGHT - 200 + 10
+back_button_width = 200
+back_button_height = 200
+back_button_rect = pygame.Rect(back_button_x, back_button_y, back_button_width, back_button_height)
+
+# Load and scale keybind images
+w_image = pygame.transform.scale(pygame.image.load('w_image.png'), (30, 30))
+s_image = pygame.transform.scale(pygame.image.load('s_image.png'), (30, 30))
+a_image = pygame.transform.scale(pygame.image.load('a_image.png'), (30, 30))
+d_image = pygame.transform.scale(pygame.image.load('d_image.png'), (30, 30))
+
+# Initial settings
+settings = {
+    "game_modes": ["easy", "medium", "hard"],
+    "volume": {
+        "sfx": 0,  
+        "music": 0  
+    },
+    "keybinds": {
+        "move up": "W",
+        "move down": "S",
+        "move left": "A",
+        "move right": "D",
+    }
+}
+def load_settings():
+    with open('settings.json', 'r') as file:
+        return json.load(file)
+settings_screen = False
+selected_option = None
+game_modes = ["easy", "medium", "hard"]
+settings = load_settings()
+
+pygame.mixer.init()
+pygame.mixer.music.load('background_music.mp3') 
+pygame.mixer.music.set_volume(settings['volume']['music'] / 100)
+pygame.mixer.music.play(-1)
 #______________________________________________
 # Function to get the next available slot
 
@@ -229,7 +292,8 @@ def handle_powerup_collision(powerup_x, powerup_y, counter):
                 powerup_x, powerup_y = new_slot
         return powerup_x, powerup_y, counter
 # ---------------------------
-# Functions
+#MARIA FUNCTIONS
+
 running = True
 while running:
     mouse_x, mouse_y = pygame.mouse.get_pos()
@@ -248,7 +312,8 @@ while running:
             click = True
             if laser_on == False:
                 player_bullets.append([player_x + player_center[0], player_y + player_center[1], dx, dy, bullet_life])
-            #christina's code for the counters of parameters of the obejcts 
+
+            ##christina's code for the counters of parameters of the obejcts 
             if laserPUP_counter >= 1:
                 if laser_parameters.collidepoint(event.pos):
                     laserPUP_counter -= 1
@@ -258,7 +323,7 @@ while running:
             if healthPUP_counter >= 1:
                 if health_parameters.collidepoint(event.pos):
                      healthPUP_counter -= 1
-                     player_hp += 10
+                     player_hp += 20
                      if healthPUP_counter < 1: 
                         healthPUP_x, healthPUP_y = -100, -100
             if rookPUP_counter >= 1:
@@ -290,26 +355,68 @@ while running:
                         if slots and healthPUP_y < 600: 
                             new_slot = slots.pop(0)
                             healthPUP_x, healthPUP_y = new_slot
-
-
-        elif event.type == pygame.MOUSEBUTTONUP:
-            click = False
-            laser_on = False
-
-        elif event.type == pygame.QUIT:
+    if settings_screen == True:
+        if event.type == pygame.QUIT:
             running = False
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            x, y = event.pos
+            slider_x = (WIDTH - slider_length) // 2
+
+            # Check SFX volume control
+            if 350 - slider_radius <= y <= 350 + slider_radius:
+                if x <= slider_x:
+                    settings['volume']['sfx'] = max(settings['volume']['sfx'] - 1, 0)
+                elif x >= slider_x + slider_length:
+                    settings['volume']['sfx'] = min(settings['volume']['sfx'] + 1, 100)
+                save_settings(settings)
+            # Check Music volume control
+            elif 450 - slider_radius <= y <= 450 + slider_radius:
+                if x <= slider_x:
+                    settings['volume']['music'] = max(settings['volume']['music'] - 1, 0)
+                elif x >= slider_x + slider_length:
+                    settings['volume']['music'] = min(settings['volume']['music'] + 1, 100)
+                pygame.mixer.music.set_volume(settings['volume']['music'] / 100)
+                save_settings(settings)
+
+            # Check game mode selection
+            game_mode_x = 250
+            for mode in game_modes:
+                if game_mode_x <= x <= game_mode_x + checkbox_size and 160 <= y <= 160 + checkbox_size:
+                    settings['game_modes'] = mode
+                    selected_option = f"game_modes_{mode}"
+                    save_settings(settings)
+                game_mode_x += checkbox_size + checkbox_margin
+        if event.type == pygame.KEYDOWN:
+            if selected_option and selected_option.startswith("game_mode"):
+                if event.key in [pygame.K_LEFT, pygame.K_RIGHT]:
+                    current_mode_index = game_modes.index(settings['game_mode'])
+                    settings['game_mode'] = game_modes[(current_mode_index + 1) % len(game_modes)]
+                    save_settings(settings)
+        if (click_x >= back_button_x and click_x <= back_button_x + back_button_width) and (click_y >= back_button_y and click_y <= back_button_y + back_button_height) and not clicked:
+                print("Back Button Clicked")
+                menu_open = True
+                settings_screen = False
+                
+            
+
+
+    elif event.type == pygame.MOUSEBUTTONUP:
+        click = False
+        laser_on = False
+
+    elif event.type == pygame.QUIT:
+        running = False
 
 
     # GAME STATE UPDATES
     # All game math and comparisons happen here
 
-    #parameters so theyre always updated
+     #parameters so theyre always updated
     player_rect = pygame.Rect(player_x, player_y, player_width, player_height)
     rook_parameters = pygame.Rect(rookPUP_x, rookPUP_y, 90, 90)
     laser_parameters = pygame.Rect(laserPUP_x, laserPUP_y, 90, 90)
     queen_parameters = pygame.Rect(queenPUP_x, queenPUP_y, 90, 90)
     health_parameters = pygame.Rect(healthPUP_x, healthPUP_y, 90, 90)
-
 
     # WASD movement
     #!! taken from mrgallo site
@@ -329,7 +436,7 @@ while running:
     if player_x < WIDTH-player_width:
         if keys[100] == True:  # d
             player_x += 10 * dash
-          
+
     # waves
     if clear == True and tutorial == False: 
         wave += 1
@@ -345,7 +452,7 @@ while running:
             for _ in range(3):
                 coins.append(pygame.Rect(random.randrange(100, 800), random.randrange(600), 23, 23)) 
         
-    if wave % 4 == 0 or wave == 0:
+    if wave % 2 == 0 or wave == 0:
         spawn_chest = True
 
     if spawn_chest: 
@@ -358,11 +465,8 @@ while running:
                     selected_item = random.choice(chest_items)
                 elif wave == 0: 
                     selected_item = queenPUP
-
-
         # this is the problematic code that doesn't run for some reason 
-
-    for chest in fullchest_list:
+        for chest in fullchest_list:
             if keys[102]:  
                 if not f_key_pressed:
                     f_key_pressed = True
@@ -370,11 +474,10 @@ while running:
                     fullchest_list.remove(chest)
                     emptychest_list.append(pygame.Rect(chest_x, chest_y, 90, 90))
                     draw_empty = True 
-
                 if selected_item == queenPUP:
                     queen_powerup_activated = True 
                     queenPUP_counter += 1 
-                    print(queenPUP_counter)
+
                 if selected_item == laserPUP:
                     laserPUP_counter += 1
                     laserPUP_x, laserPUP_y, laserPUP_counter = handle_powerup_collision(laserPUP_x, laserPUP_y, laserPUP_counter)
@@ -401,6 +504,8 @@ while running:
                 tutorial = False
             else:
                 f_key_pressed = False
+
+
     # Catherine's bullet system
     for b in player_bullets:
         b[0] += b[2]
@@ -439,6 +544,7 @@ while running:
         if laser_life < 0:
             laser_on = False
             laser_life = 120
+
     # dash
     if keys[109] and laser_cd < 0: # l possible bug? yeah
         dash_on = True
@@ -453,9 +559,10 @@ while running:
             dash = 1
             dash_on = False
             dash_life = 30
-        
-        
+
+
     # Catherine Enemy system
+
     if clear == True and tutorial == False:  
         for _ in range(e_spawn_rate):
             e_x = random.randrange(0, WIDTH)
@@ -466,6 +573,8 @@ while running:
 
             e_rect = pygame.Rect(e_x-10, e_y-10, 20, 20)
             enemies_rect.append(e_rect)
+
+
     enemies_alive = []
     e_rects = []
 
@@ -496,6 +605,7 @@ while running:
             if l_rect.colliderect(e_rect):
                 e[4] -= 5
                 points += 1
+
         if e[4] > 0:
             enemies_alive.append(e)
         elif e[4] == 0:
@@ -527,6 +637,8 @@ while running:
     if player_hp <= 0:
         print("dead")
         dead_open = True
+
+
     #coins being collected 
 # note: code will be added to store the coin in inventory
     player_rect = pygame.Rect(player_x, player_y, player_width, player_height)
@@ -587,6 +699,7 @@ while running:
         bigtitle = pygame.transform.scale(titleImg, (240,160))
         screen.blit(bigtitle, (titlex, titley))
 
+
         #check if button clicked
         if (click_x>=startx and click_x<=startx+100) and (click_y>=starty and click_y<=starty+50) and clicked == False:
             print("Start Button CLicked")
@@ -599,16 +712,100 @@ while running:
 
         elif (click_x >= settingx and click_x <= settingx +40) and (click_y>=settingy and click_y<=settingy+40) and clicked == False:
             print("Settings Button Clicked")
-            current_screen = 1
+            settings_screen = True
 
 
     # Scene 2 (Instructions/setting screen) MARIA ADD UR STUFF HERE
-    elif current_screen == 1:
+    if settings_screen == True:
+        screen.fill(tan)
+        
+        with open("settings.json", "w") as file:
+            json.dump(settings, file)
+
+        
+        def save_settings(settings):
+            with open('settings.json', 'w') as file:
+                json.dump(settings, file)
 
 
-        screen.fill((224, 202, 211)) 
-        scene_title = scene_title_font.render('Instructions Screen', True, (242, 17, 109))
-        screen.blit(scene_title, (90, 0))
+        def render_centered_text(text, font, color, screen, center_x, center_y):
+            text_surface = font.render(text, True, color)
+            text_rect = text_surface.get_rect()
+            text_rect.center = (center_x, center_y)
+            screen.blit(text_surface, text_rect)
+
+        def render_text(text, x, y, color=dark_brown, font=font_small):
+            text_surface = font.render(text, True, color)
+            screen.blit(text_surface, (x, y))
+            
+        def draw_slider(x, y, value, color, left_img, right_img):
+            pygame.draw.line(screen, color, (x, y), (x + slider_length, y), slider_height)
+            dot_x = x + (value / 100) * slider_length
+            pygame.draw.circle(screen, color, (int(dot_x), y), slider_radius)
+
+    
+            screen.blit(left_img, (x - left_img.get_width() - 45, y - left_img.get_height() // 2))
+            screen.blit(right_img, (x + slider_length + 50, y - right_img.get_height() // 2))
+
+
+        def display(screen, settings, selected_option):
+            screen.fill(tan)
+            render_centered_text("PREFERENCES", font_large, black, screen, WIDTH // 2, HEIGHT - 650)
+
+            render_text("Game Mode", 20, 150, black, font_medium)
+            game_mode_x = 250
+            for mode in game_modes:
+                mode_text_y = 130
+                checkbox_y = 160
+                render_text(mode.capitalize(), game_mode_x, mode_text_y, dark_brown)
+                draw_checkbox(game_mode_x, checkbox_y, mode == settings['game_modes'])
+                game_mode_x += checkbox_size + checkbox_margin
+
+            render_text("Volume Settings", 20, 250, black, font_medium)
+
+            # Draw sliders and plus/minus buttons
+            draw_slider((WIDTH - slider_length) // 2, 350, settings['volume']['sfx'], black, minus_sign, plus_sign)
+            draw_slider((WIDTH - slider_length) // 2, 450, settings['volume']['music'], black, minus_sign, plus_sign)
+
+            # Draw slider labels
+            render_centered_text("SFX", font_medium, dark_brown, screen, WIDTH // 2, 310)
+            render_centered_text("Music", font_medium, dark_brown, screen, WIDTH // 2, 410)
+
+            render_text("Keybinds", 20, 500, black, font_medium)
+            y_offset = 550
+            x_offset = 300
+            move_up_width = font_medium.size("move up")[0]
+
+            render_text("Move Up", 40, y_offset, dark_brown, font_small)
+            screen.blit(w_image, (40 + move_up_width + 10, y_offset))
+
+            render_text("Move Down", 40, y_offset + 40, dark_brown, font_small)
+            screen.blit(s_image, (40 + move_up_width + 10, y_offset + 40))
+
+            render_text("Move Left", 40 + x_offset, y_offset, dark_brown, font_small)
+            screen.blit(a_image, (40 + x_offset + move_up_width + 10, y_offset))
+
+            render_text("Move Right", 40 + x_offset, y_offset + 40, dark_brown, font_small)
+            screen.blit(d_image, (40 + x_offset + move_up_width + 10, y_offset + 40))
+
+            # Draw the back button at the bottom left corner
+            screen.blit(back_button, (WIDTH - 200, HEIGHT - 200 + 10))
+
+        def draw_checkbox(x, y, checked):
+            pygame.draw.rect(screen, black, (x, y, checkbox_size, checkbox_size), 4)  # Thicker line
+            if checked:
+                screen.blit(checkmark, (x, y))
+
+        settings = load_settings()
+        selected_option = None
+        game_modes = ["easy", "medium", "hard"]
+        display(screen, settings, selected_option)
+         
+
+        
+        
+                
+
 
     # Scene 3 (Game)
     elif current_screen == 2:
@@ -628,7 +825,7 @@ while running:
         empty_chest_img = pygame.image.load("empty_chest.png")
         empty_chest_img = pygame.transform.scale(empty_chest_img, (115,115))
 
-        chest_items = [queenPUP, laserPUP, healthPUP, rookPUP, coin_image]
+        chest_items = [ laserPUP, healthPUP, rookPUP, coin_image]
         #font 
         text_font = pygame.font.SysFont('Courier New', 40, bold = True)
         text_font_smaller = pygame.font.SysFont('Courier New', 20, bold = True)
@@ -679,7 +876,6 @@ while running:
         else: 
             countdown = wave_cd // 60
             print_text(f"NEXT WAVE IN {countdown+1}", text_font, (0,0,0), WIDTH/2-200, 10)
-    
 
 
         #inventory lower bar 
@@ -692,7 +888,7 @@ while running:
         pygame.draw.rect(screen, slot_colour, (slot_x+400, 630, slot_measurements, slot_measurements))
         pygame.draw.rect(screen, slot_colour, (slot_x+480, 630, slot_measurements, slot_measurements))
 
-        #coin bar
+        #coin bar 
         pygame.draw.rect(screen, coin_bar_color, (WIDTH - coin_bar_width, 0, coin_bar_width, coin_bar_height))
         screen.blit(coin_image, (600,5))
         print_text(f"$ {c_collected}", text_font, (0,0,0), 650, 10)
@@ -701,7 +897,6 @@ while running:
         for c in coins:
             screen.blit(coin_image, (c[0],c[1]))
 
-        
         screen.blit(healthPUP, (healthPUP_x, healthPUP_y))
         screen.blit(laserPUP, (laserPUP_x, laserPUP_y))
         screen.blit(rookPUP, (rookPUP_x, rookPUP_y))
@@ -720,8 +915,8 @@ while running:
                     for chest in emptychest_list:
                         screen.blit(empty_chest_img, (chest_x, chest_y))
 
-
     #coding for numbering how many powerups you pick up: COUNTER
+        #coding for numbering how many powerups you pick up: COUNTER
         if rookPUP_counter >= 1:
                 if rookPUP_y > 600:
                     print_text(f"{rookPUP_counter}", text_font_smaller, (0,0,0), rookPUP_x + 55, rookPUP_y +10)
@@ -766,6 +961,7 @@ while running:
                 print_text(f"Health Power Up", text_font_smaller, (0, 0, 0), og_purchase_x+570, og_purchase_y)
                 screen.blit(coin_image, (og_purchase_x + 550, og_purchase_y+ +200))
                 print_text(f"{healthPUP_price}", text_font, (0, 0, 0), og_purchase_x+600, og_purchase_y+210)
+
 
 
          #pause menu in game
@@ -817,5 +1013,6 @@ while running:
     pygame.display.flip()
     clock.tick(60)
     #---------------------------
+
 
 pygame.quit()
