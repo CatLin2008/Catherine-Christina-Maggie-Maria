@@ -37,8 +37,12 @@ bullet_life = 200
 laser_on = False
 click = False
 laser_life = 60
+laser_cd = 300
 
 dash = 1
+dash_on = False
+dash_life = 30
+dash_cd = 120
 
 enemies = []
 enemies_rect = []
@@ -59,6 +63,8 @@ wave = 0
 e_spawn_rate = 0
 spawn_chest = False
 clear = False
+tutorial = True
+wave_cd = 180
 
 #font 
 text_font = pygame.font.SysFont(None, 40, bold = True)
@@ -354,67 +360,68 @@ while running:
         else:
           e_key_pressed = False
 
-    #PRESS f to collect the chest materials
-    player_rect = pygame.Rect(player_x, player_y, player_width, player_height)
-    for chest in closedchest_list:
-        if chest.colliderect(player_rect):
-            closedchest_list.remove(chest)
-            fullchest_list.append(pygame.Rect(chest_x, chest_y, 90, 90))
-            selected_item = random.choice(chest_items)
-# this is the problematic code that doesn't run for some reason 
-    for chest in fullchest_list:
-        if keys[102]:  
-            if not f_key_pressed:
-                f_key_pressed = True
-            if fullchest_list:
-                fullchest_list.pop()
-                emptychest_list.append(pygame.Rect(chest_x, chest_y, 90, 90))
-            if selected_item == laserPUP2:
-                laserPUP_counter += 1
-                laserPUP_x2, laserPUP_y2, laserPUP_counter = handle_powerup_collision(laserPUP_x2, laserPUP_y2, laserPUP_counter)
-                if laserPUP_y > 600:
-                        laserPUP_x2, laserPUP_y2 = laserPUP_x, laserPUP_y
-                elif slots: 
-                    new_slot = slots.pop(0)
-                    laserPUP_x2, laserPUP_y2 = new_slot
-            elif selected_item == healthPUP2:
-                healthPUP_counter += 1 
-                healthPUP_x2, healthPUP_y2, healthPUP_counter = handle_powerup_collision(healthPUP_x2, healthPUP_y2, healthPUP_counter)
-                if healthPUP_y > 600:
-                    healthPUP_x2, healthPUP_y2 = healthPUP_x, healthPUP_y
-                elif slots: 
-                    new_slot = slots.pop(0)
-                    healthPUP_x2, healthPUP_y2 = new_slot
-            elif selected_item == rookPUP2:
-                rookPUP_counter += 1
-                rookPUP_x2, rookPUP_y2, rookPUP_counter = handle_powerup_collision(rookPUP_x2, rookPUP_y2, rookPUP_counter)
-                if rookPUP_y > 600:
-                        rookPUP_x2, rookPUP_y2 = rookPUP_x, rookPUP_y
-                elif slots:  
-                    new_slot = slots.pop(0)
-                    rookPUP_x2, rookPUP_y2 = new_slot
-
-            elif selected_item == coin_image:
-                c_collected +=  1
-                if slots:
-                    slots.pop(0)  # Remove the slot if a coin is collected
-        else:
-            f_key_pressed = False
-
     # waves
-
-    if clear == True: # h
+    if clear == True and tutorial == False: 
         wave += 1
+        print(f"wave {wave}, spawn {e_spawn_rate} enemies, spawn chest {spawn_chest}")
+        spawn_chest = False
         e_spawn_rate += 2
         clear = True
 
-    if wave % 4 == 0:
+    if wave % 4 == 0 or wave == 0:
         spawn_chest = True
 
 
-    # print(f"wave {wave}, spawn {e_spawn_rate} enemies, spawn chest {spawn_chest}")
 
-    spawn_chest = False
+    if spawn_chest == True: 
+        player_rect = pygame.Rect(player_x, player_y, player_width, player_height)
+        for chest in closedchest_list:
+            if chest.colliderect(player_rect):
+                closedchest_list.remove(chest)
+                fullchest_list.append(pygame.Rect(chest_x, chest_y, 90, 90))
+                selected_item = random.choice(chest_items)
+        # this is the problematic code that doesn't run for some reason 
+        for chest in fullchest_list:
+            if keys[102]:  
+                if not f_key_pressed:
+                    f_key_pressed = True
+                if fullchest_list:
+                    fullchest_list.pop()
+                    emptychest_list.append(pygame.Rect(chest_x, chest_y, 90, 90))
+                if selected_item == laserPUP2:
+                    laserPUP_counter += 1
+                    laserPUP_x2, laserPUP_y2, laserPUP_counter = handle_powerup_collision(laserPUP_x2, laserPUP_y2, laserPUP_counter)
+                    if laserPUP_y > 600:
+                            laserPUP_x2, laserPUP_y2 = laserPUP_x, laserPUP_y
+                    elif slots: 
+                        new_slot = slots.pop(0)
+                        laserPUP_x2, laserPUP_y2 = new_slot
+                elif selected_item == healthPUP2:
+                    healthPUP_counter += 1 
+                    healthPUP_x2, healthPUP_y2, healthPUP_counter = handle_powerup_collision(healthPUP_x2, healthPUP_y2, healthPUP_counter)
+                    if healthPUP_y > 600:
+                        healthPUP_x2, healthPUP_y2 = healthPUP_x, healthPUP_y
+                    elif slots: 
+                        new_slot = slots.pop(0)
+                        healthPUP_x2, healthPUP_y2 = new_slot
+                elif selected_item == rookPUP2:
+                    rookPUP_counter += 1
+                    rookPUP_x2, rookPUP_y2, rookPUP_counter = handle_powerup_collision(rookPUP_x2, rookPUP_y2, rookPUP_counter)
+                    if rookPUP_y > 600:
+                            rookPUP_x2, rookPUP_y2 = rookPUP_x, rookPUP_y
+                    elif slots:  
+                        new_slot = slots.pop(0)
+                        rookPUP_x2, rookPUP_y2 = new_slot
+
+                elif selected_item == coin_image:
+                    c_collected +=  1
+                    if slots:
+                        slots.pop(0)  # Remove the slot if a coin is collected
+                tutorial = False
+            else:
+                f_key_pressed = False
+
+
 
     # Catherine's bullet system
     for b in player_bullets:
@@ -433,8 +440,11 @@ while running:
         points += enemy_kill
 
     # LAZERS!!!!
-    if keys[108] == True: # l
+    if keys[108] == True and laser_cd < 0: # l
         laser_on = True
+        laser_cd = 300
+    else:
+        laser_cd -= 1
 
     laser = []
 
@@ -451,18 +461,34 @@ while running:
         if laser_life < 0:
             laser_on = False
             laser_life = 120
-        print(laser_life)
+
+
+
+    # dash = 1
+    # dash_on = False
+    # dash_life = 30
+    # dash_cd = 120
 
     # dash
-    if keys[109] == True: # l
-        dash = 5
+    if keys[109] and laser_cd < 0: # l possible bug? yeah
+        dash_on = True
+        dash_cd = 120
     else:
-        dash = 1
+        dash_cd -= 1
 
+    if dash_on:
+        dash = 5
+        dash_life -= 1
+        if dash_life < 0:
+            dash = 1
+            dash_on = False
+            dash_life = 30
+
+    print(laser_cd)
     # Catherine Enemy system
 
-    if clear == True:  
-        for _ in range(5):
+    if clear == True and tutorial == False:  
+        for _ in range(e_spawn_rate):
             e_x = random.randrange(0, WIDTH)
             e_y = random.randrange(0, HEIGHT)
 
@@ -509,10 +535,13 @@ while running:
 
     enemies = enemies_alive
 
-    if len(enemies) == 0:
+    if len(enemies) == 0 and wave_cd <= 0:
         clear = True
+        wave_cd = 180
     else:
         clear = False
+        if len(enemies) == 0 and tutorial == False:
+            wave_cd -= 1
 
     # player 
     player_hitbox = white_player.get_rect()
@@ -528,7 +557,6 @@ while running:
     if player_hp <= 0:
         print("dead")
         dead_open = True
-
 
 
     #coins being collected 
@@ -680,7 +708,7 @@ while running:
             e_rect = pygame.Rect(e[0]-10, e[1]-10, 20, 20)
             pygame.draw.rect(screen, (255, 0, 0), e_rect)    
 
-        # laser!!!
+        # laser!!# laser!!!
         if laser_on == True:
             if click == True:
                 for l in laser:
@@ -698,8 +726,15 @@ while running:
         # Points bar
         print_text(f"{points}", text_font, (0,0,0), 10, 10)
 
+        # health bar
+        pygame.draw.rect(screen, (255, 0, 0), (WIDTH/2-250, 595, (player_hp/100) * 500, 25))
+
         # waves
-        print_text(f"WAVE {wave}", text_font, (0,0,0), WIDTH/2, 10)
+        if wave_cd == 180:
+            print_text(f"WAVE {wave}", text_font, (0,0,0), WIDTH/2-100, 10)
+        else: 
+            countdown = wave_cd // 60
+            print_text(f"NEXT WAVE IN {countdown+1}", text_font, (0,0,0), WIDTH/2-200, 10)
 
 
         #inventory lower bar 
@@ -860,7 +895,7 @@ while running:
             player_hp = 100
             dead_open = False
             menu_open = True
-            
+
     # Must be the last two lines
     # of the game loop
     pygame.display.flip()
