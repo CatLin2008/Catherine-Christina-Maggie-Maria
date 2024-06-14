@@ -234,6 +234,8 @@ checkmark = pygame.transform.scale(pygame.image.load('tick.png'), (checkbox_size
 minus_sign = pygame.transform.scale(pygame.image.load('minus_sign.png'), (80,80))
 plus_sign = pygame.transform.scale(pygame.image.load('plus_sign.png'), (80,80))
 
+dragging_sfx = False
+dragging_music = False
 # back button
 back_button = pygame.transform.scale(pygame.image.load('backbutton.png'), (200, 200))  
 back_button_x = WIDTH - 200
@@ -271,6 +273,11 @@ settings_screen = False
 selected_option = None
 game_modes = ["easy", "medium", "hard"]
 settings = load_settings()
+
+pygame.mixer.init()
+pygame.mixer.music.load('background_music.mp3') 
+pygame.mixer.music.set_volume(settings['volume']['music'] / 100)
+pygame.mixer.music.play(-1)
 #______________________________________________
 # Function to get the next available slot
 
@@ -850,11 +857,7 @@ while running:
         selected_option = None
         game_modes = ["easy", "medium", "hard"]
         display(screen, settings, selected_option)
-        
-        pygame.mixer.init()
-        pygame.mixer.music.load('background_music.mp3') 
-        pygame.mixer.music.set_volume(settings['volume']['music'] / 100)
-        pygame.mixer.music.play(-1) 
+         
 
         
         
