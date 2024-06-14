@@ -1,3 +1,5 @@
+# you can delete this file lol
+
 # pygame template
 
 import pygame, sys, math, random
@@ -31,7 +33,7 @@ player_center = [(player_width / 2), (player_height / 2)]
 damage_cooldown = 0
 
 player_bullets = []
-bullet_speed = 10
+bullet_speed = 15
 bullet_life = 200
 
 laser_on = False
@@ -46,8 +48,8 @@ dash_cd = 120
 
 enemies = []
 enemies_rect = []
-enemy_health = 100
-enemy_speed = 1
+enemy_health = 50
+enemy_speed = 2
 b_x = 0
 b_y = 0
 e_colour = (0,255,0)
@@ -65,6 +67,21 @@ spawn_chest = False
 clear = False
 tutorial = True
 wave_cd = 180
+
+# Catherine sfx
+collect_coin_sfx = pygame.mixer.Sound("pickupCoin 2.wav")
+player_hit_sfx = pygame.mixer.Sound("hitHurt.wav")
+clear_stage_sfx = pygame.mixer.Sound("powerUp.wav")
+click_sfx = pygame.mixer.Sound("click.wav")
+death_sfx = pygame.mixer.Sound("death.mp3")
+error_sfx = pygame.mixer.Sound("error.wav")
+game_music = pygame.mixer.Sound("game_music.mp3")
+laser_sfx = pygame.mixer.Sound("laser.mp3")
+main_menu_music = pygame.mixer.Sound("main_menu_music.mp3")
+game_over_music = pygame.mixer.Sound("game_over_music.mp3")
+start_game = True
+on_menu = True
+
 
 #font 
 text_font = pygame.font.SysFont(None, 40, bold = True)
@@ -243,7 +260,7 @@ while running:
         elif event.type == pygame.MOUSEBUTTONDOWN: #vectors for bullet
           if event.button == 1:  # Left mouse button
             click_x, click_y = event.pos
-            # print(click_x, click_y)
+            print(click_x, click_y)
             angle = calc_angle(player_x + player_center[0], player_y + player_center[1], mouse_x, mouse_y)
             dx, dy = calc_velocity(bullet_speed, angle)
             click = True
@@ -421,7 +438,7 @@ while running:
             else:
                 f_key_pressed = False
 
-    
+
 
     # Catherine's bullet system
     for b in player_bullets:
@@ -443,12 +460,15 @@ while running:
     if keys[108] == True and laser_cd < 0: # l
         laser_on = True
         laser_cd = 300
+    elif keys[108] == True and laser_cd > 0:
+        error_sfx.play()
     else:
         laser_cd -= 1
 
     laser = []
 
     if click == True and laser_on == True:
+        laser_sfx.play()
         angle = calc_angle(player_x + player_center[0], player_y + player_center[1], mouse_x, mouse_y)
         dx, dy = calc_velocity(bullet_speed, angle)
         laser_x = player_x + player_center[0]
@@ -461,18 +481,20 @@ while running:
         if laser_life < 0:
             laser_on = False
             laser_life = 120
-        
+
 
 
     # dash = 1
     # dash_on = False
     # dash_life = 30
     # dash_cd = 120
-    
+
     # dash
     if keys[109] and laser_cd < 0: # l possible bug? yeah
         dash_on = True
         dash_cd = 120
+    elif keys[109] and laser_cd > 0: # l possible bug? yeah
+        error_sfx.play()
     else:
         dash_cd -= 1
 
@@ -484,7 +506,7 @@ while running:
             dash_on = False
             dash_life = 30
 
-    print(laser_cd)
+
     # Catherine Enemy system
 
     if clear == True and tutorial == False:  
@@ -530,19 +552,23 @@ while running:
                 e[4] -= 5
                 points += 1
 
-        if e[4] >= 0:
+        if e[4] > 0:
             enemies_alive.append(e)
+        elif e[4] == 0:
+            for _ in range(3):
+                e_coins = pygame.Rect(e[0], e[1], 23, 23)
+                coins.append(e_coins) 
 
     enemies = enemies_alive
 
     if len(enemies) == 0 and wave_cd <= 0:
         clear = True
         wave_cd = 180
+        clear_stage_sfx.play()
     else:
         clear = False
         if len(enemies) == 0 and tutorial == False:
             wave_cd -= 1
-        
 
     # player 
     player_hitbox = white_player.get_rect()
@@ -552,13 +578,12 @@ while running:
         if player_hitbox.collidelist(e_rects) >= 0 and (pause_open == False):
             player_hp -= 10
             damage_cooldown = 20
+            player_hit_sfx.play()
     elif damage_cooldown > 0:
         damage_cooldown -= 1
 
     if player_hp <= 0:
-        print("dead")
         dead_open = True
-
 
 
     #coins being collected 
@@ -569,6 +594,7 @@ while running:
         if c.colliderect(player_rect):
             coins.remove(c)
             c_collected += 1
+            collect_coin_sfx.play()
 
    #this is the code so that it doesnt collide and change spots when the sprite goes near the inventory box
     if queenPUP_y <= 600:
@@ -595,6 +621,10 @@ while running:
     if menu_open == True:
         chessboardImg = pygame.image.load('chessboard.jpg')
         # smallchessboard = pygame.transform.scale(chessboardImg, (30,30))
+        if on_menu == True:
+            main_menu_music.play()
+            on_menu = False
+ 
 
 
         screen.blit(chessboardImg, (2,-20))
@@ -635,28 +665,35 @@ while running:
         #check if button clicked
         if (click_x>=startx and click_x<=startx+100) and (click_y>=starty and click_y<=starty+50) and clicked == False:
             print("Start Button CLicked")
+            start_game = True
             menu_open = False
             current_screen = 2
+            click_sfx.play()
 
         elif (click_x>=exitx and click_x<=exitx+100) and (click_y>=exity and click_y<=exity+50) and clicked == False:
             print("Exit Button Clicked")
+            click_sfx.play()
             break
 
         elif (click_x >= settingx and click_x <= settingx +40) and (click_y>=settingy and click_y<=settingy+40) and clicked == False:
             print("Settings Button Clicked")
             current_screen = 1
+            click_sfx.play()
 
 
     # Scene 2 (Instructions/setting screen) MARIA ADD UR STUFF HERE
     elif current_screen == 1:
-
-
         screen.fill((224, 202, 211)) 
         scene_title = scene_title_font.render('Instructions Screen', True, (242, 17, 109))
         screen.blit(scene_title, (90, 0))
 
     # Scene 3 (Game)
     elif current_screen == 2:
+
+        # music :3
+        if start_game == True:
+            #game_music.play()
+            start_game = False
 
         background = pygame.image.load("Untitled drawing.png")
         white_player = pygame.image.load("white-chess-piece.png")
@@ -710,7 +747,7 @@ while running:
             e_rect = pygame.Rect(e[0]-10, e[1]-10, 20, 20)
             pygame.draw.rect(screen, (255, 0, 0), e_rect)    
 
-        # laser!!!
+        # laser!!# laser!!!
         if laser_on == True:
             if click == True:
                 for l in laser:
@@ -737,8 +774,6 @@ while running:
         else: 
             countdown = wave_cd // 60
             print_text(f"NEXT WAVE IN {countdown+1}", text_font, (0,0,0), WIDTH/2-200, 10)
-
-        
 
 
         #inventory lower bar 
@@ -820,6 +855,7 @@ while running:
         if (click_x>=pausex and click_x<=pausex+40) and (click_y>=pausey and click_y<=pausey+40) and pause_open == False:
             print("Pause Button CLicked")
             pause_open = True
+            click_sfx.play()
 
         if store_open:
             pygame.draw.rect(screen, store_colour, ((WIDTH - store_width) / 2, (HEIGHT - store_height) / 2, store_width, store_height))
@@ -880,17 +916,21 @@ while running:
 
         if (click_x>=exitx and click_x<=exitx+100) and (click_y>=exity and click_y<=exity+50) and clicked == False:
             print("Exit Button Clicked")
+            click_sfx.play()
             break
 
         #going make to game after clicking the back button in the pause menu
         if (click_x>=backx and click_x<=backx+80) and (click_y>=backy and click_y<=backy+30) and clicked == False:
             # print("Back Button CLicked")
             pause_open = False
+            click_sfx.play()
 
     if dead_open == True:
         pygame.draw.rect(screen, (232, 183, 199), (100, 67,621,491))
         dead_title = dead_title_font.render('You are dead.Try again?', True, (222, 27, 113))
         screen.blit(dead_title, (115, 152))
+        death_sfx.play() # buggy help
+        
 
         menubutton = pygame.image.load('menubutton.png')
         smallmenubutton = pygame.transform.scale(menubutton, (90, 40))
@@ -899,6 +939,7 @@ while running:
             player_hp = 100
             dead_open = False
             menu_open = True
+            click_sfx.play()
 
     # Must be the last two lines
     # of the game loop
