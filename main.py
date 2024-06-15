@@ -105,10 +105,10 @@ rookPUP_x = 1000
 rookPUP_y = -1000
 
 coins = [
-    pygame.Rect(random.randrange(125, 800), random.randrange(600), 23, 23),
-    pygame.Rect(random.randrange(125, 800), random.randrange(600), 23, 23),
-    pygame.Rect(random.randrange(125, 800), random.randrange(600), 23, 23),
-    pygame.Rect(random.randrange(125, 800), random.randrange(600), 23, 23)
+    pygame.Rect(random.randrange(125, 700), random.randrange(550), 23, 23),
+    pygame.Rect(random.randrange(125, 700), random.randrange(550), 23, 23),
+    pygame.Rect(random.randrange(125, 700), random.randrange(550), 23, 23),
+    pygame.Rect(random.randrange(125, 700), random.randrange(550), 23, 23)
 ]
 c_collected = 0
 #coin bar
@@ -117,7 +117,7 @@ coin_bar_width = 200
 coin_bar_color = (255, 215, 0)
 
 # Chest parameters
-chest_x, chest_y = (random.randrange(50,700)), random.randrange(125, 600)
+chest_x, chest_y = (random.randrange(50,600)), random.randrange(125, 550)
 closedchest_list = [pygame.Rect(chest_x, chest_y, 90, 90)]
 fullchest_list = []
 emptychest_list = []
@@ -309,7 +309,7 @@ while running:
             print(click_x, click_y)
             angle = calc_angle(player_x + player_center[0], player_y + player_center[1], mouse_x, mouse_y)
             dx, dy = calc_velocity(bullet_speed, angle)
-            click = True
+    
             if laser_on == False:
                 player_bullets.append([player_x + player_center[0], player_y + player_center[1], dx, dy, bullet_life])
 
@@ -318,6 +318,8 @@ while running:
                 if laser_parameters.collidepoint(event.pos):
                     laserPUP_counter -= 1
                     laser_powerup_activated = True
+                    if laser_on == False:
+                        player_bullets.append([player_x + player_center[0], player_y + player_center[1], dx, dy, bullet_life])
                     if laserPUP_counter < 1: 
                                 laserPUP_x, laserPUP_y = -100, -100
             if healthPUP_counter >= 1:
@@ -464,7 +466,7 @@ while running:
                 if wave != 0: 
                     selected_item = random.choice(chest_items)
                 elif wave == 0: 
-                    selected_item = queenPUP
+                    selected_item = rookPUP
         # this is the problematic code that doesn't run for some reason 
         for chest in fullchest_list:
             if keys[102]:  
@@ -531,7 +533,7 @@ while running:
 
     laser = []
 
-    if click == True and laser_on == True:
+    if laser_powerup_activated == True and laser_on == True:
         angle = calc_angle(player_x + player_center[0], player_y + player_center[1], mouse_x, mouse_y)
         dx, dy = calc_velocity(bullet_speed, angle)
         laser_x = player_x + player_center[0]
@@ -546,19 +548,20 @@ while running:
             laser_life = 120
 
     # dash
-    if keys[109] and laser_cd < 0: # l possible bug? yeah
-        dash_on = True
-        dash_cd = 120
-    else:
-        dash_cd -= 1
+    if rook_powerup_activated: 
+        if keys[101] and laser_cd < 0: # l possible bug? yeah
+            dash_on = True
+            dash_cd = 120
+        else:
+            dash_cd -= 1
 
-    if dash_on:
-        dash = 5
-        dash_life -= 1
-        if dash_life < 0:
-            dash = 1
-            dash_on = False
-            dash_life = 30
+        if dash_on:
+            dash = 5
+            dash_life -= 1
+            if dash_life < 0:
+                dash = 1
+                dash_on = False
+                dash_life = 30
 
 
     # Catherine Enemy system
@@ -800,12 +803,6 @@ while running:
         selected_option = None
         game_modes = ["easy", "medium", "hard"]
         display(screen, settings, selected_option)
-         
-
-        
-        
-                
-
 
     # Scene 3 (Game)
     elif current_screen == 2:
@@ -936,7 +933,7 @@ while running:
             print("Pause Button CLicked")
             pause_open = True
 
-        if wave % 12 == 0: 
+        if wave % 6 == 0: 
             if store_open:
                 pygame.draw.rect(screen, store_colour, ((WIDTH - store_width) / 2, (HEIGHT - store_height) / 2, store_width, store_height))
                 pygame.draw.rect(screen, coin_colour, (300, 600, 200, 50))
