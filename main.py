@@ -466,7 +466,7 @@ while running:
                 if wave != 0: 
                     selected_item = random.choice(chest_items)
                 elif wave == 0: 
-                    selected_item = rookPUP
+                    selected_item = queenPUP
         # this is the problematic code that doesn't run for some reason 
         for chest in fullchest_list:
             if keys[102]:  
