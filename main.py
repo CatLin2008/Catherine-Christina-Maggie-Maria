@@ -262,10 +262,12 @@ selected_option = None
 game_modes = ["easy", "medium", "hard"]
 settings = load_settings()
 
+
 pygame.mixer.init()
 pygame.mixer.music.load('background_music.mp3') 
 pygame.mixer.music.set_volume(settings['volume']['music'] / 100)
 pygame.mixer.music.play(-1)
+coin_sound = pygame.mixer.Sound('coinsound.mp3')
 #______________________________________________
 # Function to get the next available slot
 
@@ -371,6 +373,8 @@ while running:
                 elif x >= slider_x + slider_length:
                     settings['volume']['sfx'] = min(settings['volume']['sfx'] + 1, 100)
                 save_settings(settings)
+                coin_sound.set_volume(settings['volume']['sfx'] / 100)
+                coin_sound.play()
             # Check Music volume control
             elif 450 - slider_radius <= y <= 450 + slider_radius:
                 if x <= slider_x:
