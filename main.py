@@ -299,15 +299,6 @@ def calc_angle(x1, y1, x2, y2):
 def calc_velocity(speed, angle):
     dx, dy = [speed * math.cos(angle), speed * math.sin(angle)]
     return dx, dy
-
-def handle_powerup_collision(powerup_x, powerup_y, counter):
-        if pygame.Rect(powerup_x, powerup_y, 80, 80).colliderect(player_rect):
-            new_slot = slots[0]
-            slots.pop(0)
-            if new_slot:
-                counter += 1
-                powerup_x, powerup_y = new_slot
-        return powerup_x, powerup_y, counter
 # ---------------------------
 #Maria Functions
 
@@ -435,7 +426,6 @@ while running:
     player_rect = pygame.Rect(player_x, player_y, player_width, player_height)
     rook_parameters = pygame.Rect(rookPUP_x, rookPUP_y, 90, 90)
     laser_parameters = pygame.Rect(laserPUP_x, laserPUP_y, 90, 90)
-    queen_parameters = pygame.Rect(queenPUP_x, queenPUP_y, 90, 90)
     health_parameters = pygame.Rect(healthPUP_x, healthPUP_y, 90, 90)
 
 
@@ -567,7 +557,7 @@ while running:
 
     laser = []
 
-    if laser_on == True:
+    if laser_powerup_activated == True and laser_on == True:
         laser_sfx.play()
         angle = calc_angle(player_x + player_center[0], player_y + player_center[1], mouse_x, mouse_y)
         dx, dy = calc_velocity(bullet_speed, angle)
@@ -698,17 +688,6 @@ while running:
             coins.remove(c)
             c_collected += 1
             collect_coin_sfx.play()
-
-   #this is the code so that it doesnt collide and change spots when the sprite goes near the inventory box
-    if healthPUP_y <= 600 :
-        healthPUP_x, healthPUP_y, healthPUP_counter = handle_powerup_collision(healthPUP_x, healthPUP_y, healthPUP_counter)
-
-    if rookPUP_y <= 600:
-        rookPUP_x, rookPUP_y, rookPUP_counter = handle_powerup_collision(rookPUP_x, rookPUP_y, rookPUP_counter)
-
-    if laserPUP_y <= 600:
-        laserPUP_x, laserPUP_y, laserPUP_counter = handle_powerup_collision(laserPUP_x, laserPUP_y, laserPUP_counter)
-
 #-------- DRAWING SECTION ---------
     #MAIN MENU(Maggie)
     #
@@ -864,34 +843,13 @@ while running:
         menu_open = False
 
         background = pygame.image.load("Untitled drawing.png")
-        white_player = pygame.image.load("pawn.png")
-        player_width = 45
-        player_height = 75
+        white_player = pygame.image.load("white-chess-piece.png")
+        player_width = 60
+        player_height = 115
         white_player = pygame.transform.scale(white_player, (player_width, player_height))
-        bullet_img = pygame.transform.scale(bullet_img, (20, 20))
-        # #queen power up image
-        # queenPUP = pygame.image.load("queen_powerup.png")
-        # queenPUP = pygame.transform.scale(queenPUP, (90, 90))
-        # queenPUP2 = pygame.transform.scale(queenPUP, (90, 90))
-        # #health power up image
-        # healthPUP = pygame.image.load("heartpup.png")
-        # healthPUP = pygame.transform.scale(healthPUP, (90, 90))
-        # healthPUP2 = pygame.transform.scale(healthPUP, (90, 90))
-
-        # #rook power up image
-        # rookPUP = pygame.image.load("rookpup.png")
-        # rookPUP = pygame.transform.scale(rookPUP, (90, 90))
-        # rookPUP2 = pygame.transform.scale(rookPUP, (90, 90))
-
-        # #laser power up image
-        # laserPUP = pygame.image.load("laserpup.png")
-        # laserPUP = pygame.transform.scale(laserPUP, (90, 90))
-        # laserPUP2 = pygame.transform.scale(laserPUP, (90, 90))
-        # coin_image = pygame.image.load('coin.png')
-        # coin_image = pygame.transform.scale(coin_image, (45, 50))
-
-        queensprite = pygame.image.load("queen.png")
-        queensprite = pygame.transform.scale(queensprite, (55, 110))
+        
+        queensprite = pygame.image.load("white_queen.png")
+        queensprite = pygame.transform.scale(queensprite, (90, 90))
         Closed_chest_img = pygame.image.load("closed_chest.png")
         Closed_chest_img = pygame.transform.scale(Closed_chest_img, (115,115))
         full_chest_img = pygame.image.load("full_chest.png")
@@ -899,6 +857,7 @@ while running:
         empty_chest_img = pygame.image.load("empty_chest.png")
         empty_chest_img = pygame.transform.scale(empty_chest_img, (115,115))
 
+        chest_items = [ laserPUP, healthPUP, rookPUP, coin_image]
         #font 
         text_font = pygame.font.SysFont('Courier New', 40, bold = True)
         text_font_smaller = pygame.font.SysFont('Courier New', 20, bold = True)
@@ -917,6 +876,12 @@ while running:
             screen.blit(queensprite, (player_x, player_y))
             queenPUP_x, queenPUP_y = -100, -100
 
+        if laser_powerup_activated == True and not laser_on: 
+            print_text(f"Press L to Activate, Right Now", text_font_smaller, (0,0,250), 210, 500)
+        if rook_powerup_activated == True and not dash_on:
+            print_text(f"Press E to Activate, Right Now", text_font_smaller, (0,0,250), 210, 500)
+        
+
         # dummy enemy
         for e in enemies:
             e_rect = pygame.Rect(e[0]-10, e[1]-10, 20, 20)
@@ -924,17 +889,18 @@ while running:
 
         # laser!!# laser!!!
         if laser_on == True:
-            for l in laser:
-                l_rect = pygame.Rect(l[0] - 10, l[1] - 10, 20, 20)
-                pygame.draw.rect(screen, (255, 0, 0), l_rect)
-
+            if click == True:
+                for l in laser:
+                    l_rect = pygame.Rect(l[0] - 10, l[1] - 10, 20, 20)
+                    pygame.draw.rect(screen, (255, 0, 0), l_rect)
+            else:
+                pygame.draw.line(screen, (0, 0, 255), (player_x + player_center[0], player_y + player_center[1]), (mouse_x, mouse_y), 1)
 
 
         # bullet
         for b in player_bullets:
             b_rect = pygame.Rect(b[0]-2, b[1]-2, 4, 4)        
             pygame.draw.rect(screen, (0, 0, 0), b_rect) 
-            screen.blit(bullet_img, (b[0]-7, b[1]-7))
 
         # Points bar
         print_text(f"{points}", text_font, (0,0,0), 10, 10)
@@ -973,7 +939,6 @@ while running:
         screen.blit(laserPUP, (laserPUP_x, laserPUP_y))
         screen.blit(rookPUP, (rookPUP_x, rookPUP_y))
 
-
         #this is operating system for the chest to make the random things appear as well as the chest openings 
         if spawn_chest == True: 
             if chest_open == False:
@@ -987,20 +952,18 @@ while running:
                 if draw_empty == True:
                     for chest in emptychest_list:
                         screen.blit(empty_chest_img, (chest_x, chest_y))
-
-    #coding for numbering how many powerups you pick up: COUNTER
+ 
+ #coding for numbering how many powerups you pick up: COUNTER
         if rookPUP_counter >= 1:
                 if rookPUP_y > 600:
                     print_text(f"{rookPUP_counter}", text_font_smaller, (0,0,0), rookPUP_x + 55, rookPUP_y +10)
-
         if healthPUP_counter >= 1: 
             if healthPUP_y >600:      
                 print_text(f"{healthPUP_counter}", text_font_smaller, (0,0,0), healthPUP_x + 55, healthPUP_y +10)
-
         if laserPUP_counter >= 1:
             if laserPUP_y >600:
                 print_text(f"{laserPUP_counter}", text_font_smaller, (0,0,0), laserPUP_x +55, laserPUP_y + 10)
-
+    
         #Draw Pause button
         pausebutton = pygame.image.load("pausebutton.png")
         smallpausebutton = pygame.transform.scale(pausebutton, (40, 40))
@@ -1009,33 +972,33 @@ while running:
         if (click_x>=pausex and click_x<=pausex+40) and (click_y>=pausey and click_y<=pausey+40) and pause_open == False:
             print("Pause Button CLicked")
             pause_open = True
-            click_sfx.play()
 
-        if wave % 6 == 0: 
+        if wave % 6 == 0 and wave != 0: 
+            store_open = True
             if store_open:
                 pygame.draw.rect(screen, store_colour, ((WIDTH - store_width) / 2, (HEIGHT - store_height) / 2, store_width, store_height))
-                pygame.draw.rect(screen, coin_colour, (300, 600, 200, 50))
-                print_text(f"Coins: {c_collected}", text_font, (0, 0, 0), 335,610)
-                print_text(f"STORE", text_font, (0, 0, 0), 350,125)
+                pygame.draw.rect(screen, coin_colour, (300, 600, 250, 50))
+                print_text(f"Coins: {c_collected}", text_font, (0, 0, 0), 335,600)
+                print_text(f"STORE", text_font, (0, 0, 0), 325,125)
                 pygame.draw.rect(screen, (coin_colour), (og_purchase_x, og_purchase_y, purchase_slots_width, purchase_slots_height))
                 screen.blit(laserPUP, (og_purchase_x+50, og_purchase_y+ 80))
-                print_text(f"Laser Power Up", text_font_smaller, (0, 0, 0), og_purchase_x+50, og_purchase_y)
+                print_text(f"Laser Power Up", text_font_smaller, (0, 0, 0), og_purchase_x +10 , og_purchase_y)
                 screen.blit(coin_image, (og_purchase_x+ 20, og_purchase_y+ +200))
-                print_text(f"{laser_price}", text_font, (0, 0, 0), og_purchase_x+ 90, og_purchase_y+210)
+                print_text(f"{laser_price}", text_font, (0, 0, 0), og_purchase_x+ 90, og_purchase_y+200)
 
                 #rook pup buy
                 pygame.draw.rect(screen, (coin_colour), (og_purchase_x+ 270, og_purchase_y, purchase_slots_width, purchase_slots_height))
                 screen.blit(rookPUP, (og_purchase_x + 330, og_purchase_y+ 80))
-                print_text(f"Rook Power Up", text_font_smaller, (0, 0, 0), og_purchase_x+ 325, og_purchase_y)
+                print_text(f"Rook Power Up", text_font_smaller, (0, 0, 0), og_purchase_x+ 300, og_purchase_y)
                 screen.blit(coin_image, (og_purchase_x + 300, og_purchase_y+ +200))
-                print_text(f"{rookPUP_price}", text_font, (0, 0, 0), og_purchase_x+350, og_purchase_y+210)
-
+                print_text(f"{rookPUP_price}", text_font, (0, 0, 0), og_purchase_x+350, og_purchase_y+200)
+                
                 #health pup buy
                 pygame.draw.rect(screen, (coin_colour), (og_purchase_x+ 520, og_purchase_y, purchase_slots_width, purchase_slots_height))
                 screen.blit(healthPUP, (og_purchase_x + 580, og_purchase_y+ 80))
-                print_text(f"Health Power Up", text_font_smaller, (0, 0, 0), og_purchase_x+570, og_purchase_y)
+                print_text(f"Health Power Up", text_font_smaller, (0, 0, 0), og_purchase_x+530, og_purchase_y)
                 screen.blit(coin_image, (og_purchase_x + 550, og_purchase_y+ +200))
-                print_text(f"{healthPUP_price}", text_font, (0, 0, 0), og_purchase_x+600, og_purchase_y+210)
+                print_text(f"{healthPUP_price}", text_font, (0, 0, 0), og_purchase_x+600, og_purchase_y+200)
 
          #pause menu in game
     #pause menu in game
