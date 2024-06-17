@@ -456,11 +456,12 @@ while running:
     if wave % 2 == 0 or wave == 0:
         spawn_chest = True
 
-    if spawn_chest: 
+    if spawn_chest:
         for chest in closedchest_list:
             if chest.colliderect(player_rect):
                 closedchest_list.remove(chest)
-                fullchest_list.append(pygame.Rect(chest_x, chest_y, 0, 90))
+                fullchest_list.append(pygame.Rect(chest_x, chest_y, 90, 90))
+                selected_item = random.choice(chest_items)
                 chest_open == True 
                 if wave != 0: 
                     selected_item = random.choice(chest_items)
@@ -496,12 +497,20 @@ while running:
                         rookPUP_x, rookPUP_y = new_slot
 
                 elif selected_item == coin_image:
-                    c_collected +=  10
+                    c_collected +=  1
                     if slots:
                         slots.pop(0)  # Remove the slot if a coin is collected
                 tutorial = False
             else:
                 f_key_pressed = False
+    if rook_powerup_activated:
+            slots.insert(0, new_slot)
+
+    if health_powerup_activated:
+            slots.insert(0, new_slot)
+
+    if laser_powerup_activated:
+            slots.insert(0, new_slot)
 
 
     # Catherine's bullet system
@@ -521,22 +530,26 @@ while running:
         points += enemy_kill
 
     # LAZERS!!!!
-    if keys[108] == True and laser_cd < 0: # l
+    if laser_powerup_activated == True:
+        if keys[108] == True and laser_cd < 0: # l
+            print("hello")
             laser_on = True
-            laser_cd = 300
-    if laser_cd < -1:
-            laser_cd = -1
-    elif keys[108] == True and laser_cd > 0:
-        error_sfx.play()
+            laser_cd = 299
+            if laser_cd < -1:
+                laser_cd = -1
+        elif keys[108] == True and laser_cd > 0:
+            error_sfx.play()
+        else:
+            laser_cd -= 1
+    
+        laser = []
 
-    laser = []
-
-    if laser_powerup_activated == True and laser_on == True:
         laser_sfx.play()
         angle = calc_angle(player_x + player_center[0], player_y + player_center[1], mouse_x, mouse_y)
         dx, dy = calc_velocity(bullet_speed, angle)
         laser_x = player_x + player_center[0]
         laser_y = player_y + player_center[1]
+        print(laser_life)
         for _ in range(150):
             laser.append([laser_x, laser_y, dx, dy])
             laser_x += dx/2
@@ -544,46 +557,53 @@ while running:
         laser_life -= 1
         if laser_life < 0:
             laser_on = False
-            laser_life = 120
+            laser_life = 60
 
-    if laser_life == 0: 
-        laser_powerup_activated = False 
+        if laser_life == 0:
+            laser_powerup_activated = False 
 
-    # dash
-    if rook_powerup_activated: 
-        if keys[101] and laser_cd < 0: # l possible bug? yeah
+    if rook_powerup_activated == True: 
+        if keys[101] and dash_cd < 0: # l possible bug? yeah
             dash_on = True
             dash_cd = 120
         elif keys[109] and dash_cd > 0: # l possible bug? yeah
             error_sfx.play()
         else:
             dash_cd -= 1
-        
+
         if dash_on:
             dash_sfx.play()
             dash = 5
             dash_life -= 1
-            if dash_life < 0:
+            if dash_life <= 0:
                 dash = 1
                 dash_on = False
                 dash_life = 30
-    
+
     if dash_life == 0: 
         rook_powerup_activated = False 
 
-
     # Catherine Enemy system
-
-    if clear == True and tutorial == False:  
+    print(dash_life)
+    if clear == True and tutorial == False and wave % 6 != 0:  
+        print("spawn")
         for _ in range(e_spawn_rate):
-            e_x = random.randrange(0, WIDTH)
-            e_y = random.randrange(0, HEIGHT)
+            spawn_pos = random.randrange(0, 4)
+            if spawn_pos == 0:
+                e_x = random.randrange(0, WIDTH)
+                e_y = random.randrange(-100, 0)
+            if spawn_pos == 1:
+                e_x = random.randrange(WIDTH, WIDTH + 100)
+                e_y = random.randrange(0, HEIGHT)
+            if spawn_pos == 2:
+                e_x = random.randrange(0, WIDTH)
+                e_y = random.randrange(HEIGHT, HEIGHT + 100)
+            if spawn_pos == 3:
+                e_x = random.randrange(-100, 0)
+                e_y = random.randrange(0, HEIGHT)
 
             enemy = [e_x, e_y, 0, 0, enemy_health] 
             enemies.append(enemy)
-
-            e_rect = pygame.Rect(e_x-10, e_y-10, 20, 20)
-            enemies_rect.append(e_rect)
 
 
     enemies_alive = []
@@ -593,17 +613,18 @@ while running:
         enemy_to_player_dist = calc_dist(player_x + player_center[0], player_y + player_center[1], e[0], e[1])
         enemy_angle = calc_angle(e[0] + 10, e[1]+10, player_x + player_center[0], player_y + player_center[1]) # +10 needs to change
         e[2], e[3] = calc_velocity(enemy_speed, enemy_angle)
-        e_rect = pygame.Rect(e[0]-10, e[1]-10, 20, 20)
+        e_rect = pygame.Rect(e[0]-10, e[1]-10, 45, 75)
         e_rects.append(e_rect)
 
-        if enemy_to_player_dist != 0:
-            if enemy_to_player_dist < 50:
-                e[0] += e[2]*3
-                e[1] += e[3]*3
-            else:
-                e[0] += e[2]
-                e[1] += e[3]
-            #add attack animation
+        if pause_open == False and menu_open == False:
+            if enemy_to_player_dist != 0:
+                if enemy_to_player_dist < 50:
+                    e[0] += e[2]*3
+                    e[1] += e[3]*3
+                else:
+                    e[0] += e[2]
+                    e[1] += e[3]
+                #add attack animation
 
         for b in player_bullets:
             b_rect = pygame.Rect(b[0]-2, b[1]-2, 4, 4)
@@ -611,11 +632,13 @@ while running:
                 e[4] -= 10
                 b[4] = -1
                 points += bullet_hit
-        for l in laser:
-            l_rect = pygame.Rect(l[0], l[1], 20, 20)
-            if l_rect.colliderect(e_rect):
-                e[4] -= 5
-                points += 1
+                player_hit_sfx.play()
+        if laser_powerup_activated == True:
+            for l in laser:
+                l_rect = pygame.Rect(l[0] -10, l[1] -10, 20, 20)
+                if l_rect.colliderect(e_rect):
+                    e[4] -= 5
+                    points += 1
 
         if e[4] > 0:
             enemies_alive.append(e)
@@ -628,7 +651,8 @@ while running:
 
     if len(enemies) == 0 and wave_cd <= 0:
         clear = True
-        wave_cd = 180
+        wave_cd = 179
+        clear_stage_sfx.play()
     else:
         clear = False
         if len(enemies) == 0 and tutorial == False:
@@ -642,14 +666,12 @@ while running:
         if player_hitbox.collidelist(e_rects) >= 0 and (pause_open == False) and (menu_open == False):
             player_hp -= 10
             damage_cooldown = 20
-           
+            player_hit_sfx.play()
     elif damage_cooldown > 0:
         damage_cooldown -= 1
 
-
     if player_hp <= 0:
         print("dead")
-        dead_open = True
 
 
     #coins being collected 
