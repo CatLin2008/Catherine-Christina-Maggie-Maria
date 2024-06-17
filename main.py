@@ -67,8 +67,15 @@ spawn_chest = False
 clear = False
 tutorial = True
 wave_cd = 180
+# Catherine sfx
 
-#font 
+click_sfx = pygame.mixer.Sound("click.wav")
+error_sfx = pygame.mixer.Sound("error.wav")
+laser_sfx = pygame.mixer.Sound("laser.mp3")
+
+
+
+#font 3
 text_font = pygame.font.SysFont(None, 40, bold = True)
 text_font_smaller = pygame.font.SysFont(None, 20, bold = True)
 #queen power up image
@@ -105,10 +112,10 @@ rookPUP_x = 1000
 rookPUP_y = -1000
 
 coins = [
-    pygame.Rect(random.randrange(125, 700), random.randrange(550), 23, 23),
-    pygame.Rect(random.randrange(125, 700), random.randrange(550), 23, 23),
-    pygame.Rect(random.randrange(125, 700), random.randrange(550), 23, 23),
-    pygame.Rect(random.randrange(125, 700), random.randrange(550), 23, 23)
+    pygame.Rect(random.randrange(125,700), random.randrange(100,550), 23, 23),
+    pygame.Rect(random.randrange(125,700), random.randrange(100,550), 23, 23),
+    pygame.Rect(random.randrange(125,700), random.randrange(100,550), 23, 23),
+    pygame.Rect(random.randrange(125,700), random.randrange(100,550), 23, 23)
 ]
 c_collected = 0
 #coin bar
@@ -117,7 +124,7 @@ coin_bar_width = 200
 coin_bar_color = (255, 215, 0)
 
 # Chest parameters
-chest_x, chest_y = (random.randrange(50,600)), random.randrange(125, 550)
+chest_x, chest_y = (random.randrange(50,550)), random.randrange(125, 500)
 closedchest_list = [pygame.Rect(chest_x, chest_y, 90, 90)]
 fullchest_list = []
 emptychest_list = []
@@ -147,7 +154,7 @@ store_width = 800
 store_height = 700
 store_colour = (92, 64, 51)
 coin_colour = (196, 164, 132)
-purchase_slots_width = 150
+purchase_slots_width = 200
 purchase_slots_height = 250 
 og_purchase_x = 25
 og_purchase_y = 200
@@ -262,6 +269,7 @@ selected_option = None
 game_modes = ["easy", "medium", "hard"]
 settings = load_settings()
 
+
 pygame.mixer.init()
 pygame.mixer.music.load('background_music.mp3') 
 pygame.mixer.music.set_volume(settings['volume']['music'] / 100)
@@ -283,14 +291,7 @@ def calc_velocity(speed, angle):
     dx, dy = [speed * math.cos(angle), speed * math.sin(angle)]
     return dx, dy
 
-def handle_powerup_collision(powerup_x, powerup_y, counter):
-        if pygame.Rect(powerup_x, powerup_y, 80, 80).colliderect(player_rect):
-            new_slot = slots[0]
-            slots.pop(0)
-            if new_slot:
-                counter += 1
-                powerup_x, powerup_y = new_slot
-        return powerup_x, powerup_y, counter
+
 # ---------------------------
 #MARIA FUNCTIONS
 
@@ -371,6 +372,7 @@ while running:
                 elif x >= slider_x + slider_length:
                     settings['volume']['sfx'] = min(settings['volume']['sfx'] + 1, 100)
                 save_settings(settings)
+         
             # Check Music volume control
             elif 450 - slider_radius <= y <= 450 + slider_radius:
                 if x <= slider_x:
@@ -398,9 +400,6 @@ while running:
                 print("Back Button Clicked")
                 menu_open = True
                 settings_screen = False
-                
-            
-
 
     elif event.type == pygame.MOUSEBUTTONUP:
         click = False
@@ -452,7 +451,7 @@ while running:
                 closedchest_list.append(chest_rect)
                 spawn_chest = False 
             for _ in range(3):
-                coins.append(pygame.Rect(random.randrange(100, 800), random.randrange(600), 23, 23)) 
+                coins.append(pygame.Rect(random.randrange(125,700), random.randrange(100,550), 23, 23)) 
         
     if wave % 2 == 0 or wave == 0:
         spawn_chest = True
@@ -461,12 +460,12 @@ while running:
         for chest in closedchest_list:
             if chest.colliderect(player_rect):
                 closedchest_list.remove(chest)
-                fullchest_list.append(pygame.Rect(chest_x, chest_y, 90, 90))
+                fullchest_list.append(pygame.Rect(chest_x, chest_y, 0, 90))
                 chest_open == True 
                 if wave != 0: 
                     selected_item = random.choice(chest_items)
                 elif wave == 0: 
-                    selected_item = rookPUP
+                    selected_item = queenPUP
         # this is the problematic code that doesn't run for some reason 
         for chest in fullchest_list:
             if keys[102]:  
@@ -482,25 +481,22 @@ while running:
 
                 if selected_item == laserPUP:
                     laserPUP_counter += 1
-                    laserPUP_x, laserPUP_y, laserPUP_counter = handle_powerup_collision(laserPUP_x, laserPUP_y, laserPUP_counter)
                     if slots: 
                         new_slot = slots.pop(0)
                         laserPUP_x, laserPUP_y = new_slot
                 elif selected_item == healthPUP:
                     healthPUP_counter += 1 
-                    healthPUP_x, healthPUP_y, healthPUP_counter = handle_powerup_collision(healthPUP_y, healthPUP_y, healthPUP_counter)
                     if slots: 
                         new_slot = slots.pop(0)
                         healthPUP_x, healthPUP_y = new_slot
                 elif selected_item == rookPUP:
                     rookPUP_counter += 1
-                    rookPUP_x, rookPUP_y, rookPUP_counter = handle_powerup_collision(rookPUP_x, rookPUP_y, rookPUP_counter)
                     if slots:  
                         new_slot = slots.pop(0)
                         rookPUP_x, rookPUP_y = new_slot
 
                 elif selected_item == coin_image:
-                    c_collected +=  1
+                    c_collected +=  10
                     if slots:
                         slots.pop(0)  # Remove the slot if a coin is collected
                 tutorial = False
@@ -526,14 +522,17 @@ while running:
 
     # LAZERS!!!!
     if keys[108] == True and laser_cd < 0: # l
-        laser_on = True
-        laser_cd = 300
-    else:
-        laser_cd -= 1
+            laser_on = True
+            laser_cd = 300
+    if laser_cd < -1:
+            laser_cd = -1
+    elif keys[108] == True and laser_cd > 0:
+        error_sfx.play()
 
     laser = []
 
     if laser_powerup_activated == True and laser_on == True:
+        laser_sfx.play()
         angle = calc_angle(player_x + player_center[0], player_y + player_center[1], mouse_x, mouse_y)
         dx, dy = calc_velocity(bullet_speed, angle)
         laser_x = player_x + player_center[0]
@@ -547,21 +546,30 @@ while running:
             laser_on = False
             laser_life = 120
 
+    if laser_life == 0: 
+        laser_powerup_activated = False 
+
     # dash
     if rook_powerup_activated: 
         if keys[101] and laser_cd < 0: # l possible bug? yeah
             dash_on = True
             dash_cd = 120
+        elif keys[109] and dash_cd > 0: # l possible bug? yeah
+            error_sfx.play()
         else:
             dash_cd -= 1
-
+        
         if dash_on:
+            dash_sfx.play()
             dash = 5
             dash_life -= 1
             if dash_life < 0:
                 dash = 1
                 dash_on = False
                 dash_life = 30
+    
+    if dash_life == 0: 
+        rook_powerup_activated = False 
 
 
     # Catherine Enemy system
@@ -631,11 +639,13 @@ while running:
     player_hitbox.topleft = (player_x, player_y)
 
     if damage_cooldown <= 0:
-        if player_hitbox.collidelist(e_rects) >= 0 and (pause_open == False):
+        if player_hitbox.collidelist(e_rects) >= 0 and (pause_open == False) and (menu_open == False):
             player_hp -= 10
             damage_cooldown = 20
+           
     elif damage_cooldown > 0:
         damage_cooldown -= 1
+
 
     if player_hp <= 0:
         print("dead")
@@ -650,23 +660,18 @@ while running:
         if c.colliderect(player_rect):
             coins.remove(c)
             c_collected += 1
-
-   #this is the code so that it doesnt collide and change spots when the sprite goes near the inventory box
-    if healthPUP_y <= 600 :
-        healthPUP_x, healthPUP_y, healthPUP_counter = handle_powerup_collision(healthPUP_x, healthPUP_y, healthPUP_counter)
-    if rookPUP_y <= 600:
-        rookPUP_x, rookPUP_y, rookPUP_counter = handle_powerup_collision(rookPUP_x, rookPUP_y, rookPUP_counter)
-    if laserPUP_y <= 600:
-        laserPUP_x, laserPUP_y, laserPUP_counter = handle_powerup_collision(laserPUP_x, laserPUP_y, laserPUP_counter)
+            
+   
     
 #-------- DRAWING SECTION ---------
     #MAIN MENU(Maggie)
     #
     # Scene 1 (Menu screen) chessboard + title
     if menu_open == True:
+        score = 0
+        enemy_health < 0
         chessboardImg = pygame.image.load('chessboard.jpg')
         # smallchessboard = pygame.transform.scale(chessboardImg, (30,30))
-
 
         screen.blit(chessboardImg, (2,-20))
         scene_title = scene_title_font.render('Main Menu', True, (219, 33, 98))
@@ -706,16 +711,20 @@ while running:
         #check if button clicked
         if (click_x>=startx and click_x<=startx+100) and (click_y>=starty and click_y<=starty+50) and clicked == False:
             print("Start Button CLicked")
+            current_screen =2
             menu_open = False
-            current_screen = 2
+            wave = 0
+            click_sfx.play()
 
         elif (click_x>=exitx and click_x<=exitx+100) and (click_y>=exity and click_y<=exity+50) and clicked == False:
             print("Exit Button Clicked")
+            click_sfx.play()
             break
 
         elif (click_x >= settingx and click_x <= settingx +40) and (click_y>=settingy and click_y<=settingy+40) and clicked == False:
             print("Settings Button Clicked")
             settings_screen = True
+            click_sfx.play()
 
 
     # Scene 2 (Instructions/setting screen) MARIA ADD UR STUFF HERE
@@ -841,6 +850,12 @@ while running:
             screen.blit(queensprite, (player_x, player_y))
             queenPUP_x, queenPUP_y = -100, -100
 
+        if laser_powerup_activated == True and not laser_on: 
+            print_text(f"Press L to Activate, Right Now", text_font_smaller, (0,0,250), 210, 500)
+        if rook_powerup_activated == True and not dash_on:
+            print_text(f"Press E to Activate, Right Now", text_font_smaller, (0,0,250), 210, 500)
+        
+
         # dummy enemy
         for e in enemies:
             e_rect = pygame.Rect(e[0]-10, e[1]-10, 20, 20)
@@ -911,9 +926,8 @@ while running:
                 if draw_empty == True:
                     for chest in emptychest_list:
                         screen.blit(empty_chest_img, (chest_x, chest_y))
-
-    #coding for numbering how many powerups you pick up: COUNTER
-        #coding for numbering how many powerups you pick up: COUNTER
+ 
+ #coding for numbering how many powerups you pick up: COUNTER
         if rookPUP_counter >= 1:
                 if rookPUP_y > 600:
                     print_text(f"{rookPUP_counter}", text_font_smaller, (0,0,0), rookPUP_x + 55, rookPUP_y +10)
@@ -933,31 +947,32 @@ while running:
             print("Pause Button CLicked")
             pause_open = True
 
-        if wave % 6 == 0: 
+        if wave % 6 == 0 and wave != 0: 
+            store_open = True
             if store_open:
                 pygame.draw.rect(screen, store_colour, ((WIDTH - store_width) / 2, (HEIGHT - store_height) / 2, store_width, store_height))
-                pygame.draw.rect(screen, coin_colour, (300, 600, 200, 50))
-                print_text(f"Coins: {c_collected}", text_font, (0, 0, 0), 335,610)
-                print_text(f"STORE", text_font, (0, 0, 0), 350,125)
+                pygame.draw.rect(screen, coin_colour, (300, 600, 250, 50))
+                print_text(f"Coins: {c_collected}", text_font, (0, 0, 0), 335,600)
+                print_text(f"STORE", text_font, (0, 0, 0), 325,125)
                 pygame.draw.rect(screen, (coin_colour), (og_purchase_x, og_purchase_y, purchase_slots_width, purchase_slots_height))
                 screen.blit(laserPUP, (og_purchase_x+50, og_purchase_y+ 80))
-                print_text(f"Laser Power Up", text_font_smaller, (0, 0, 0), og_purchase_x+50, og_purchase_y)
+                print_text(f"Laser Power Up", text_font_smaller, (0, 0, 0), og_purchase_x +10 , og_purchase_y)
                 screen.blit(coin_image, (og_purchase_x+ 20, og_purchase_y+ +200))
-                print_text(f"{laser_price}", text_font, (0, 0, 0), og_purchase_x+ 90, og_purchase_y+210)
+                print_text(f"{laser_price}", text_font, (0, 0, 0), og_purchase_x+ 90, og_purchase_y+200)
 
                 #rook pup buy
                 pygame.draw.rect(screen, (coin_colour), (og_purchase_x+ 270, og_purchase_y, purchase_slots_width, purchase_slots_height))
                 screen.blit(rookPUP, (og_purchase_x + 330, og_purchase_y+ 80))
-                print_text(f"Rook Power Up", text_font_smaller, (0, 0, 0), og_purchase_x+ 325, og_purchase_y)
+                print_text(f"Rook Power Up", text_font_smaller, (0, 0, 0), og_purchase_x+ 300, og_purchase_y)
                 screen.blit(coin_image, (og_purchase_x + 300, og_purchase_y+ +200))
-                print_text(f"{rookPUP_price}", text_font, (0, 0, 0), og_purchase_x+350, og_purchase_y+210)
+                print_text(f"{rookPUP_price}", text_font, (0, 0, 0), og_purchase_x+350, og_purchase_y+200)
                 
                 #health pup buy
                 pygame.draw.rect(screen, (coin_colour), (og_purchase_x+ 520, og_purchase_y, purchase_slots_width, purchase_slots_height))
                 screen.blit(healthPUP, (og_purchase_x + 580, og_purchase_y+ 80))
-                print_text(f"Health Power Up", text_font_smaller, (0, 0, 0), og_purchase_x+570, og_purchase_y)
+                print_text(f"Health Power Up", text_font_smaller, (0, 0, 0), og_purchase_x+530, og_purchase_y)
                 screen.blit(coin_image, (og_purchase_x + 550, og_purchase_y+ +200))
-                print_text(f"{healthPUP_price}", text_font, (0, 0, 0), og_purchase_x+600, og_purchase_y+210)
+                print_text(f"{healthPUP_price}", text_font, (0, 0, 0), og_purchase_x+600, og_purchase_y+200)
 
 
 
@@ -985,12 +1000,14 @@ while running:
 
         if (click_x>=exitx and click_x<=exitx+100) and (click_y>=exity and click_y<=exity+50) and clicked == False:
             print("Exit Button Clicked")
+            click_sfx.play()
             break
 
         #going make to game after clicking the back button in the pause menu
         if (click_x>=backx and click_x<=backx+80) and (click_y>=backy and click_y<=backy+30) and clicked == False:
             # print("Back Button CLicked")
             pause_open = False
+            click_sfx.play()
 
     if dead_open == True:
         pygame.draw.rect(screen, (232, 183, 199), (100, 67,621,491))
@@ -1001,9 +1018,10 @@ while running:
         smallmenubutton = pygame.transform.scale(menubutton, (90, 40))
         screen.blit(smallmenubutton,(208, 348))
         if (click_x>=menu_x and click_x<=menu_x+70) and (click_y>=menu_y and click_y<=menu_y+30) and clicked == False:
-            player_hp = 100
             dead_open = False
             menu_open = True
+            player_hp = 100
+            click_sfx.play()
 
     # Must be the last two lines
     # of the game loop
