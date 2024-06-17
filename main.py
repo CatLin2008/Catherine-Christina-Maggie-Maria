@@ -713,10 +713,16 @@ while running:
         instructions2 = instruction_title_font.render('Explore the dungeon,', True, (125, 97, 7))
         instructions3 = instruction_title_font.render('collect coins, powerups', True, (125, 97, 7))
         instructions4 = instruction_title_font.render('and fight opponents.', True, (125, 97, 7))
+        i5 = instruction_title_font.render('Use E to open store', True, (255, 252, 240))
+        i6 = instruction_title_font.render('Use L to use laser power', True, (255, 252, 240))
+        
         screen.blit(instructions1,(128, 260))
         screen.blit(instructions2,(128, 290))
         screen.blit(instructions3,(128, 320))
         screen.blit(instructions4,(128, 350))
+        screen.blit(i5,(470, 270))
+        screen.blit(i6,(470, 300))
+        
 
         #Start Button
         startImg = pygame.image.load('startbutton.png')
