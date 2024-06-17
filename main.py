@@ -2,6 +2,7 @@
 
 import pygame, sys, math, random, json
 from pygame.locals import K_ESCAPE, KEYDOWN, QUIT, K_RIGHT, K_LEFT, MOUSEBUTTONDOWN
+from high_score_manager import HighScoreManager
 #__________________________________
 pygame.init()
 
@@ -78,6 +79,9 @@ error_sfx = pygame.mixer.Sound("error.wav")
 laser_sfx = pygame.mixer.Sound("laser.mp3")
 dash_sfx = pygame.mixer.Sound("dash.wav")
 
+#chat gpt for maria
+
+high_score_manager = HighScoreManager()
 
 #font 
 text_font = pygame.font.SysFont(None, 40, bold = True)
@@ -473,7 +477,7 @@ while running:
 
     if wave % 4 == 0 or wave == 0:
         spawn_chest = True
-        
+
     if chest_done == False: 
         if spawn_chest == True:
             if closed_chest.colliderect(player_rect):
@@ -515,7 +519,7 @@ while running:
                     else:
                         f_key_pressed = False
 
-   
+
     # Catherine's bullet system
     for b in player_bullets:
         b[0] += b[2]
@@ -543,7 +547,7 @@ while running:
             error_sfx.play()
         else:
             laser_cd -= 1
-    
+
         laser = []
 
         laser_sfx.play()
@@ -672,6 +676,7 @@ while running:
         damage_cooldown -= 1
 
     if player_hp <= 0:
+        high_score_manager.update_high_score(points)
         print("dead")
         dead_open = True
 
@@ -707,14 +712,14 @@ while running:
         instructions4 = instruction_title_font.render('and fight opponents.', True, (125, 97, 7))
         i5 = instruction_title_font.render('Use E to open store', True, (255, 252, 240))
         i6 = instruction_title_font.render('Use L to use laser power', True, (255, 252, 240))
-        
+
         screen.blit(instructions1,(128, 260))
         screen.blit(instructions2,(128, 290))
         screen.blit(instructions3,(128, 320))
         screen.blit(instructions4,(128, 350))
         screen.blit(i5,(470, 270))
         screen.blit(i6,(470, 300))
-        
+
 
         #Start Button
         startImg = pygame.image.load('startbutton.png')
@@ -880,7 +885,7 @@ while running:
             white_player == queensprite
             screen.blit(queensprite, (player_x, player_y))
             queenPUP_x, queenPUP_y = -100, -100
-            
+
         if rook_powerup_activated == True:
             print_text(f"Press E to Activate, Right Now", text_font_smaller, (0,0,250), 210, 500)
 
@@ -1032,6 +1037,8 @@ while running:
         pygame.draw.rect(screen, (232, 183, 199), (100, 67,621,491))
         dead_title = dead_title_font.render('You are dead.Try again?', True, (222, 27, 113))
         screen.blit(dead_title, (115, 152))
+        high_score_text = text_font.render(f'High Score: {high_score_manager.get_high_score()}', True, (0, 0, 0))
+        screen.blit(high_score_text, (115, 200))
 
         menubutton = pygame.image.load('menubutton.png')
         smallmenubutton = pygame.transform.scale(menubutton, (90, 40))
