@@ -50,7 +50,7 @@ dash_cd = 119
 enemy_img = pygame.image.load("e_pawn.png")
 enemies = []
 enemies_rect = []
-enemy_health = 50
+enemy_health = 20
 enemy_speed = 1
 b_x = 0
 b_y = 0
@@ -436,27 +436,27 @@ while running:
     keys = pygame.key.get_pressed()
     if player_y > 0:
         if keys[119] == True:  # w
-            player_y -= 10 * dash
+            player_y -= 8 * dash
 
     if player_x > 0:
         if keys[97] == True:  # a
-            player_x -= 10 * dash
+            player_x -= 8 * dash
 
     if player_y < HEIGHT-player_height:
         if keys[115] == True:  # s
-            player_y += 10 * dash
+            player_y += 8 * dash
 
     if player_x < WIDTH-player_width:
         if keys[100] == True:  # d
-            player_x += 10 * dash
+            player_x += 8 * dash
 
 
     # waves
     if clear == True and tutorial == False: 
         wave += 1
-        print(f"wave {wave}, spawn {e_spawn_rate} enemies, spawn chest {spawn_chest}")
         e_spawn_rate += 1
-        enemy_speed += 0.2
+        enemy_speed += 0.1
+        enemy_health += 5
         chest_open = False
         dash_life = 30
         spawn_chest = False
@@ -623,7 +623,7 @@ while running:
         enemy_to_player_dist = calc_dist(player_x + player_center[0], player_y + player_center[1], e[0], e[1])
         enemy_angle = calc_angle(e[0] + 10, e[1]+10, player_x + player_center[0], player_y + player_center[1]) # +10 needs to change
         e[2], e[3] = calc_velocity(enemy_speed, enemy_angle)
-        e_rect = pygame.Rect(e[0]-10, e[1]-10, 45, 75)
+        e_rect = pygame.Rect(e[0]-22.5, e[1]-37.5, 45, 75)
         e_rects.append(e_rect)
 
         if pause_open == False and menu_open == False:
@@ -647,7 +647,7 @@ while running:
             for l in laser:
                 l_rect = pygame.Rect(l[0] -10, l[1] -10, 20, 20)
                 if l_rect.colliderect(e_rect):
-                    e[4] -= 5
+                    e[4] -= 1
                     points += 1
         if e[4] > 0:
             enemies_alive.append(e)
@@ -847,6 +847,8 @@ while running:
         menu_open = False
 
         background = pygame.image.load("background.png")
+        background = pygame.transform.scale(background, (800, 700))
+
         player_width = 45
         player_height = 75
         white_player = pygame.transform.scale(white_player, (player_width, player_height))
@@ -908,7 +910,7 @@ while running:
         pygame.draw.rect(screen, (255, 0, 0), (WIDTH/2-250, 595, (player_hp/100) * 500, 25))
 
         # waves
-        if wave_cd == 180:
+        if wave_cd == 179:
             print_text(f"WAVE {wave}", text_font, (0,0,0), WIDTH/2-100, 10)
         else: 
             countdown = wave_cd // 60
@@ -1056,4 +1058,3 @@ while running:
 pygame.quit()
 
 # you can delete this file lol
-
