@@ -857,7 +857,7 @@ while running:
     elif current_screen == 2:
         menu_open = False
 
-        background = pygame.image.load("Untitled drawing.png")
+        background = pygame.image.load("background.png")
         player_width = 45
         player_height = 75
         white_player = pygame.transform.scale(white_player, (player_width, player_height))
