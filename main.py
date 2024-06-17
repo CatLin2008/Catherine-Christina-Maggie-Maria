@@ -162,7 +162,7 @@ store_width = 800
 store_height = 700
 store_colour = (92, 64, 51)
 coin_colour = (196, 164, 132)
-purchase_slots_width = 150
+purchase_slots_width = 200
 purchase_slots_height = 250 
 og_purchase_x = 25
 og_purchase_y = 200
@@ -450,14 +450,6 @@ while running:
         if keys[100] == True:  # d
             player_x += 10 * dash
 
-    #   #adding a key press on E to open the store
-    # if keys[101]:  
-    #     if not e_key_pressed:
-    #         store_open = not store_open
-    #         e_key_pressed = True
-
-    #     else:
-    #       e_key_pressed = False
 
     # waves
     if clear == True and tutorial == False: 
@@ -465,7 +457,12 @@ while running:
         print(f"wave {wave}, spawn {e_spawn_rate} enemies, spawn chest {spawn_chest}")
         e_spawn_rate += 1
         enemy_speed += 0.2
+        chest_open = False
+        dash_life = 30
         spawn_chest = False
+        rook_powerup_activated = False
+        health_powerup_activated = False
+        
         draw_empty = False
         if wave > 1: 
             if chest_open == False:
@@ -477,7 +474,6 @@ while running:
 
     if wave % 2 == 0 or wave == 0:
         spawn_chest = True
-
 
     if spawn_chest:
         for chest in closedchest_list:
@@ -526,14 +522,6 @@ while running:
                 tutorial = False
             else:
                 f_key_pressed = False
-    if rook_powerup_activated:
-            slots.insert(0, new_slot)
-
-    if health_powerup_activated:
-            slots.insert(0, new_slot)
-
-    if laser_powerup_activated:
-            slots.insert(0, new_slot)
 
 
     # Catherine's bullet system
@@ -553,11 +541,10 @@ while running:
         points += enemy_kill
 
     # LAZERS!!!!
-    if laser_powerup_activated == True and laser_on == True:
+    if laser_powerup_activated == True:
         if keys[108] == True and laser_cd < 0: # l
-            print("FUCK")
             laser_on = True
-            laser_cd = 300
+            laser_cd = 299
             if laser_cd < -1:
                 laser_cd = -1
         elif keys[108] == True and laser_cd > 0:
@@ -572,6 +559,7 @@ while running:
         dx, dy = calc_velocity(bullet_speed, angle)
         laser_x = player_x + player_center[0]
         laser_y = player_y + player_center[1]
+        print(laser_life)
         for _ in range(150):
             laser.append([laser_x, laser_y, dx, dy])
             laser_x += dx/2
@@ -579,14 +567,16 @@ while running:
         laser_life -= 1
         if laser_life < 0:
             laser_on = False
-            laser_life = 120
-        if laser_life == 0: 
+            laser_life = 60
+
+        if laser_life == 0:
             laser_powerup_activated = False 
 
-    if rook_powerup_activated: 
-        if keys[101] and laser_cd < 0: # l possible bug? yeah
+    if rook_powerup_activated == True: 
+        if keys[101] and dash_cd < 0: # l possible bug? yeah
             dash_on = True
             dash_cd = 120
+            dash_life = 30
         elif keys[109] and dash_cd > 0: # l possible bug? yeah
             error_sfx.play()
         else:
@@ -596,13 +586,12 @@ while running:
             dash_sfx.play()
             dash = 5
             dash_life -= 1
-            if dash_life < 0:
+            if dash_life <= 0:
                 dash = 1
                 dash_on = False
-                dash_life = 30
 
         if dash_life == 0: 
-            rook_powerup_activated = False 
+            rook_powerup_activated = False
 
     # Catherine Enemy system
 
@@ -892,9 +881,7 @@ while running:
             white_player == queensprite
             screen.blit(queensprite, (player_x, player_y))
             queenPUP_x, queenPUP_y = -100, -100
-
-        if laser_powerup_activated == True and not laser_on: 
-            print_text(f"Press L to Activate, Right Now", text_font_smaller, (0,0,250), 210, 500)
+            
         if rook_powerup_activated == True and not dash_on:
             print_text(f"Press E to Activate, Right Now", text_font_smaller, (0,0,250), 210, 500)
 
@@ -904,8 +891,8 @@ while running:
             e_rect = pygame.Rect(e[0]-10, e[1]-10, 20, 20)
             screen.blit(enemy_img, (e[0]-22.5, e[1]-37.5))    
 
-        # laser!
-        if laser_on == True:
+       # laser!
+        if laser_powerup_activated == True:
             for l in laser:
                 l_rect = pygame.Rect(l[0] - 10, l[1] - 10, 20, 20)
                 pygame.draw.rect(screen, (255, 0, 0), l_rect)
