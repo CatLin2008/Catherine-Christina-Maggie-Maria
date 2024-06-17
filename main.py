@@ -51,7 +51,7 @@ enemy_img = pygame.image.load("e_pawn.png")
 enemies = []
 enemies_rect = []
 enemy_health = 50
-enemy_speed = 2
+enemy_speed = 1
 b_x = 0
 b_y = 0
 
@@ -462,7 +462,8 @@ while running:
     if clear == True and tutorial == False: 
         wave += 1
         print(f"wave {wave}, spawn {e_spawn_rate} enemies, spawn chest {spawn_chest}")
-        e_spawn_rate += 2
+        e_spawn_rate += 1
+        enemy_speed += 0.2
         spawn_chest = False
         draw_empty = False
         if wave > 1: 
@@ -473,7 +474,7 @@ while running:
             for _ in range(3):
                 coins.append(pygame.Rect(random.randrange(100, 800), random.randrange(600), 23, 23)) 
 
-    if wave % 4 == 0 or wave == 0:
+    if wave % 2 == 0 or wave == 0:
         spawn_chest = True
 
 
