@@ -1,5 +1,3 @@
-# you can delete this file lol
-
 # pygame template
 
 import pygame, sys, math, random, json
@@ -133,9 +131,9 @@ coin_bar_color = (255, 215, 0)
 
 # Chest parameters
 chest_x, chest_y = (random.randrange(50,550)), random.randrange(125, 500)
-closedchest_list = [pygame.Rect(chest_x, chest_y, 90, 90)]
-fullchest_list = []
-emptychest_list = []
+closed_chest= pygame.Rect(chest_x, chest_y, 90, 90)
+full_chest= pygame.Rect(chest_x, chest_y, 90, 90) 
+empty_chest= pygame.Rect(chest_x, chest_y, 90, 90)
 chest_items = [laserPUP, healthPUP, rookPUP, coin_image]
 
 #inventory bar
@@ -171,10 +169,11 @@ rookPUP_price = 20
 healthPUP_price = 20
 
 store_open = False
-chest_open = False
+closed_draw = False
+full_draw = False
 draw_empty = False
 f_key_pressed = False
-
+chest_done = False
 #locations for the powerups within the store for later purchases used
 laser_in_store = pygame.Rect(og_purchase_x, og_purchase_y, purchase_slots_width, purchase_slots_height)
 rookPUP_in_store = pygame.Rect(400, og_purchase_y, purchase_slots_width, purchase_slots_height)
@@ -325,26 +324,32 @@ while running:
                 if laser_on == False:
                     player_bullets.append([player_x + player_center[0], player_y + player_center[1], dx, dy, bullet_life])
 
-            #christina's code for the counters of parameters of the obejcts 
+           #christina's code for the counters of parameters of the obejcts 
             if laserPUP_counter >= 1:
                 if laser_parameters.collidepoint(event.pos):
                     laserPUP_counter -= 1
                     laser_powerup_activated = True
-                    if laser_on == False:
-                        player_bullets.append([player_x + player_center[0], player_y + player_center[1], dx, dy, bullet_life])
+                    if slots:
+                        new_slot = (laserPUP_x, laserPUP_y)
+                        slots.insert(0, new_slot) 
                     if laserPUP_counter < 1: 
                                 laserPUP_x, laserPUP_y = -100, -100
                 if healthPUP_counter >= 1:                
                     if health_parameters.collidepoint(event.pos):
                         healthPUP_counter -= 1
                         player_hp += 20
+                        if slots:
+                            new_slot = (healthPUP_x, healthPUP_y)
+                            slots.insert(0, new_slot) 
                         if healthPUP_counter < 1: 
                             healthPUP_x, healthPUP_y = -100, -100
-
             if rookPUP_counter >= 1:
                 if rook_parameters.collidepoint(event.pos):
                     rookPUP_counter -= 1
                     rook_powerup_activated = True
+                    if slots:
+                        new_slot = (rookPUP_x, rookPUP_y)
+                        slots.insert(0, new_slot) 
                     if rookPUP_counter < 1: 
                                 rookPUP_x, rookPUP_y = -100, -100
 
@@ -354,7 +359,7 @@ while running:
                     if c_collected > laser_price:
                         c_collected -= laser_price
                         laserPUP_counter += 1
-                        if slots:
+                        if slots and laserPUP_counter <= 1:
                             new_slot = slots.pop(0)
                             laserPUP_x, laserPUP_y = new_slot
 
@@ -362,14 +367,14 @@ while running:
                     if c_collected > rookPUP_price:
                         c_collected -= rookPUP_price
                         rookPUP_counter += 1
-                        if slots: 
+                        if slots and rookPUP_counter <= 1: 
                             new_slot = slots.pop(0)
                             rookPUP_x, rookPUP_y = new_slot
                 if health_in_store.collidepoint(event.pos):
                     if c_collected > healthPUP_price:
                         c_collected -= healthPUP_price
                         healthPUP_counter += 1
-                        if slots and healthPUP_y < 600: 
+                        if slots and healthPUP_counter <= 1: 
                             new_slot = slots.pop(0)
                             healthPUP_x, healthPUP_y = new_slot
     if settings_screen == True:
@@ -449,80 +454,68 @@ while running:
     if player_x < WIDTH-player_width:
         if keys[100] == True:  # d
             player_x += 8 * dash
-
-
     # waves
     if clear == True and tutorial == False: 
         wave += 1
+        print(f"wave {wave}, spawn {e_spawn_rate} enemies, spawn chest {spawn_chest}")
         e_spawn_rate += 1
-        enemy_speed += 0.1
-        enemy_health += 5
-        chest_open = False
-        dash_life = 30
+        enemy_speed += 0.2
+        dash_life = 50
         spawn_chest = False
+        chest_done = False
+        full_draw = False
+        draw_empty = False
         rook_powerup_activated = False
         health_powerup_activated = False
-        
-        draw_empty = False
         if wave > 1: 
-            if chest_open == False:
-                chest_rect = pygame.Rect(chest_x, chest_y, 90, 90)
-                closedchest_list.append(chest_rect)
-                spawn_chest = False 
             for _ in range(3):
                 coins.append(pygame.Rect(random.randrange(100, 800), random.randrange(600), 23, 23)) 
 
-    if wave % 2 == 0 or wave == 0:
+    if wave % 4 == 0 or wave == 0:
         spawn_chest = True
+        
+    if chest_done == False: 
+        if spawn_chest == True:
+            if closed_chest.colliderect(player_rect):
+                    full_draw = True
+                    if wave != 0: 
+                        selected_item = random.choice(chest_items)
+                    elif wave == 0: 
+                        selected_item = queenPUP
+                # this is the problematic code that doesn't run for some reason 
+                    if keys[102]:  
+                        if not f_key_pressed:
+                            f_key_pressed = True
+                            chest_done = True
+                        if full_draw == True:
+                            full_draw = False
+                            draw_empty = True 
+                        if selected_item == queenPUP:
+                            queen_powerup_activated = True 
+                            queenPUP_counter += 1 
+                        if selected_item == laserPUP:
+                            laserPUP_counter += 1
+                            if slots and laserPUP_counter <= 1 : 
+                                new_slot = slots.pop(0)
+                                laserPUP_x, laserPUP_y = new_slot
+                        elif selected_item == healthPUP:
+                            healthPUP_counter += 1 
+                            if slots and healthPUP_counter <= 1: 
+                                new_slot = slots.pop(0)
+                                healthPUP_x, healthPUP_y = new_slot
+                        elif selected_item == rookPUP:
+                            rookPUP_counter += 1
+                            if slots and rookPUP_counter <= 1:  
+                                new_slot = slots.pop(0)
+                                rookPUP_x, rookPUP_y = new_slot
 
-    if spawn_chest:
-        for chest in closedchest_list:
-            if chest.colliderect(player_rect):
-                closedchest_list.remove(chest)
-                fullchest_list.append(pygame.Rect(chest_x, chest_y, 90, 90))
-                selected_item = random.choice(chest_items)
-                chest_open == True 
-                if wave != 0: 
-                    selected_item = random.choice(chest_items)
-                elif wave == 0: 
-                    selected_item = queenPUP
-        # this is the problematic code that doesn't run for some reason 
-        for chest in fullchest_list:
-            if keys[102]:  
-                if not f_key_pressed:
-                    f_key_pressed = True
-                if fullchest_list:
-                    fullchest_list.remove(chest)
-                    emptychest_list.append(pygame.Rect(chest_x, chest_y, 90, 90))
-                    draw_empty = True 
-                if selected_item == queenPUP:
-                    queen_powerup_activated = True 
-                    queenPUP_counter += 1 
+                        elif selected_item == coin_image:
+                            c_collected +=  1
+                        tutorial = False
+                    else:
+                        f_key_pressed = False
 
-                if selected_item == laserPUP:
-                    laserPUP_counter += 1
-                    if slots: 
-                        new_slot = slots.pop(0)
-                        laserPUP_x, laserPUP_y = new_slot
-                elif selected_item == healthPUP:
-                    healthPUP_counter += 1 
-                    if slots: 
-                        new_slot = slots.pop(0)
-                        healthPUP_x, healthPUP_y = new_slot
-                elif selected_item == rookPUP:
-                    rookPUP_counter += 1
-                    if slots:  
-                        new_slot = slots.pop(0)
-                        rookPUP_x, rookPUP_y = new_slot
-
-                elif selected_item == coin_image:
-                    c_collected +=  1
-
-                tutorial = False
-            else:
-                f_key_pressed = False
-
-
+   
     # Catherine's bullet system
     for b in player_bullets:
         b[0] += b[2]
@@ -572,11 +565,11 @@ while running:
             laser_powerup_activated = False 
 
     if rook_powerup_activated == True: 
-        if keys[101] and dash_cd < 0: # l possible bug? yeah
+        if keys[101] and dash_cd < 0: 
             dash_on = True
             dash_cd = 120
             dash_life = 30
-        elif keys[109] and dash_cd > 0: # l possible bug? yeah
+        elif keys[109] and dash_cd > 0:
             error_sfx.play()
         else:
             dash_cd -= 1
@@ -888,7 +881,7 @@ while running:
             screen.blit(queensprite, (player_x, player_y))
             queenPUP_x, queenPUP_y = -100, -100
             
-        if rook_powerup_activated == True and not dash_on:
+        if rook_powerup_activated == True:
             print_text(f"Press E to Activate, Right Now", text_font_smaller, (0,0,250), 210, 500)
 
 
@@ -946,18 +939,14 @@ while running:
         screen.blit(rookPUP, (rookPUP_x, rookPUP_y))
 
         #this is operating system for the chest to make the random things appear as well as the chest openings 
-        if spawn_chest == True: 
-            if chest_open == False:
-                for chest in closedchest_list:
-                    screen.blit(Closed_chest_img, (chest_x, chest_y))
-                for chest in fullchest_list:
-                    screen.blit(full_chest_img, (chest_x, chest_y))
-                    if selected_item:
-                        screen.blit(selected_item, (chest_x+10, chest_y+25))  # Draw the selected item below the chest
-                        print_text("Press F to Collect", text_font_smaller, (0, 0, 0), chest_x + 10, chest_y)
-                if draw_empty == True:
-                    for chest in emptychest_list:
-                        screen.blit(empty_chest_img, (chest_x, chest_y))
+        if spawn_chest == True and full_draw == False: 
+            screen.blit(Closed_chest_img, (chest_x, chest_y))
+        if full_draw == True and draw_empty == False: 
+            screen.blit(full_chest_img, (chest_x, chest_y))
+            screen.blit(selected_item, (chest_x+10, chest_y+25))  
+            print_text("Press F to Collect", text_font_smaller, (0, 0, 0), chest_x + 10, chest_y)
+        if draw_empty == True:
+            screen.blit(empty_chest_img, (chest_x, chest_y))        
 
  #coding for numbering how many powerups you pick up: COUNTER
         if rookPUP_counter >= 1:
