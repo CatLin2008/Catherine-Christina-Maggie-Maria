@@ -473,7 +473,7 @@ while running:
             for _ in range(3):
                 coins.append(pygame.Rect(random.randrange(100, 800), random.randrange(600), 23, 23)) 
 
-    if wave % 2 == 0 or wave == 0:
+    if wave % 4 == 0 or wave == 0:
         spawn_chest = True
 
 
