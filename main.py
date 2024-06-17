@@ -164,8 +164,8 @@ purchase_slots_width = 200
 purchase_slots_height = 250 
 og_purchase_x = 25
 og_purchase_y = 200
-laser_price = 10
-rookPUP_price = 20 
+laser_price = 30
+rookPUP_price = 10 
 healthPUP_price = 20
 
 store_open = False
@@ -984,7 +984,7 @@ while running:
                 #rook pup buy
                 pygame.draw.rect(screen, (coin_colour), (og_purchase_x+ 270, og_purchase_y, purchase_slots_width, purchase_slots_height))
                 screen.blit(rookPUP, (og_purchase_x + 330, og_purchase_y+ 80))
-                print_text(f"Rook Power Up", text_font_smaller, (0, 0, 0), og_purchase_x+ 300, og_purchase_y)
+                print_text(f"Dash Power Up", text_font_smaller, (0, 0, 0), og_purchase_x+ 300, og_purchase_y)
                 screen.blit(coin_image, (og_purchase_x + 300, og_purchase_y+ +200))
                 print_text(f"{rookPUP_price}", text_font, (0, 0, 0), og_purchase_x+350, og_purchase_y+200)
 
