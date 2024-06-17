@@ -763,8 +763,9 @@ while running:
 
         elif (click_x >= settingx and click_x <= settingx +40) and (click_y>=settingy and click_y<=settingy+40) and clicked == False:
             print("Settings Button Clicked")
-            settings_screen = True
             click_sfx.play()
+            settings_screen = True
+            menu_open = False
 
 
     # Scene 2 (Instructions/setting screen) MARIA ADD UR STUFF HERE
