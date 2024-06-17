@@ -517,8 +517,7 @@ while running:
 
                 elif selected_item == coin_image:
                     c_collected +=  1
-                    if slots:
-                        slots.pop(0)  # Remove the slot if a coin is collected
+
                 tutorial = False
             else:
                 f_key_pressed = False
