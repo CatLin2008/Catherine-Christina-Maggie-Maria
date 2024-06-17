@@ -26,7 +26,7 @@ player_y = HEIGHT/2
 player_speed = 5
 player_width = 60
 player_height = 115
-white_player = pygame.image.load("white-chess-piece.png").convert_alpha()
+white_player = pygame.image.load("pawn.png").convert_alpha()
 player_hp = 100
 player_center = [(player_width / 2), (player_height / 2)]
 
@@ -40,20 +40,21 @@ bullet_life = 200
 laser_on = False
 click = False
 laser_life = 60
-laser_cd = 300
+laser_cd = 299
 
 dash = 1
 dash_on = False
 dash_life = 30
-dash_cd = 120
+dash_cd = 119
 
+enemy_img = pygame.image.load("e_pawn.png")
 enemies = []
 enemies_rect = []
 enemy_health = 50
 enemy_speed = 2
 b_x = 0
 b_y = 0
-e_colour = (0,255,0)
+
 e_rect = (0, 0)
 
 # points system
@@ -67,7 +68,7 @@ e_spawn_rate = 0
 spawn_chest = False
 clear = False
 tutorial = True
-wave_cd = 180
+wave_cd = 179
 
 # Catherine sfx
 collect_coin_sfx = pygame.mixer.Sound("pickupCoin 2.wav")
@@ -525,7 +526,7 @@ while running:
                 f_key_pressed = False
     if rook_powerup_activated:
             slots.insert(0, new_slot)
-    
+
     if health_powerup_activated:
             slots.insert(0, new_slot)
 
@@ -550,19 +551,20 @@ while running:
         points += enemy_kill
 
     # LAZERS!!!!
-    if keys[108] == True and laser_cd < 0: # l
-        laser_on = True
-        laser_cd = 300
-        if laser_cd < -1:
-            laser_cd = -1
-    elif keys[108] == True and laser_cd > 0:
-        error_sfx.play()
-    else:
-        laser_cd -= 1
-
-    laser = []
-
     if laser_powerup_activated == True and laser_on == True:
+        if keys[108] == True and laser_cd < 0: # l
+            print("FUCK")
+            laser_on = True
+            laser_cd = 300
+            if laser_cd < -1:
+                laser_cd = -1
+        elif keys[108] == True and laser_cd > 0:
+            error_sfx.play()
+        else:
+            laser_cd -= 1
+    
+        laser = []
+
         laser_sfx.play()
         angle = calc_angle(player_x + player_center[0], player_y + player_center[1], mouse_x, mouse_y)
         dx, dy = calc_velocity(bullet_speed, angle)
@@ -578,7 +580,7 @@ while running:
             laser_life = 120
         if laser_life == 0: 
             laser_powerup_activated = False 
-        
+
     if rook_powerup_activated: 
         if keys[101] and laser_cd < 0: # l possible bug? yeah
             dash_on = True
@@ -587,7 +589,7 @@ while running:
             error_sfx.play()
         else:
             dash_cd -= 1
-        
+
         if dash_on:
             dash_sfx.play()
             dash = 5
@@ -602,16 +604,25 @@ while running:
 
     # Catherine Enemy system
 
-    if clear == True and tutorial == False:  
+    if clear == True and tutorial == False and wave % 6 != 0:  
+        print("spawn")
         for _ in range(e_spawn_rate):
-            e_x = random.randrange(0, WIDTH)
-            e_y = random.randrange(0, HEIGHT)
+            spawn_pos = random.randrange(0, 4)
+            if spawn_pos == 0:
+                e_x = random.randrange(0, WIDTH)
+                e_y = random.randrange(-100, 0)
+            if spawn_pos == 1:
+                e_x = random.randrange(WIDTH, WIDTH + 100)
+                e_y = random.randrange(0, HEIGHT)
+            if spawn_pos == 2:
+                e_x = random.randrange(0, WIDTH)
+                e_y = random.randrange(HEIGHT, HEIGHT + 100)
+            if spawn_pos == 3:
+                e_x = random.randrange(-100, 0)
+                e_y = random.randrange(0, HEIGHT)
 
             enemy = [e_x, e_y, 0, 0, enemy_health] 
             enemies.append(enemy)
-
-            e_rect = pygame.Rect(e_x-10, e_y-10, 20, 20)
-            enemies_rect.append(e_rect)
 
 
     enemies_alive = []
@@ -621,7 +632,7 @@ while running:
         enemy_to_player_dist = calc_dist(player_x + player_center[0], player_y + player_center[1], e[0], e[1])
         enemy_angle = calc_angle(e[0] + 10, e[1]+10, player_x + player_center[0], player_y + player_center[1]) # +10 needs to change
         e[2], e[3] = calc_velocity(enemy_speed, enemy_angle)
-        e_rect = pygame.Rect(e[0]-10, e[1]-10, 20, 20)
+        e_rect = pygame.Rect(e[0]-10, e[1]-10, 45, 75)
         e_rects.append(e_rect)
 
         if pause_open == False and menu_open == False:
@@ -641,11 +652,12 @@ while running:
                 b[4] = -1
                 points += bullet_hit
                 player_hit_sfx.play()
-        for l in laser:
-            l_rect = pygame.Rect(l[0], l[1], 20, 20)
-            if l_rect.colliderect(e_rect):
-                e[4] -= 5
-                points += 1
+        if laser_powerup_activated == True and laser_on == True:
+            for l in laser:
+                l_rect = pygame.Rect(l[0], l[1], 20, 20)
+                if l_rect.colliderect(e_rect):
+                    e[4] -= 5
+                    points += 1
 
         if e[4] > 0:
             enemies_alive.append(e)
@@ -658,7 +670,7 @@ while running:
 
     if len(enemies) == 0 and wave_cd <= 0:
         clear = True
-        wave_cd = 180
+        wave_cd = 179
         clear_stage_sfx.play()
     else:
         clear = False
@@ -845,13 +857,14 @@ while running:
         menu_open = False
 
         background = pygame.image.load("Untitled drawing.png")
-        white_player = pygame.image.load("white-chess-piece.png")
-        player_width = 60
-        player_height = 115
+        player_width = 45
+        player_height = 75
         white_player = pygame.transform.scale(white_player, (player_width, player_height))
-        
-        queensprite = pygame.image.load("white_queen.png")
-        queensprite = pygame.transform.scale(queensprite, (90, 90))
+        bullet_img = pygame.transform.scale(bullet_img, (20, 20))
+        enemy_img = pygame.transform.scale(enemy_img, (45, 75))
+
+        queensprite = pygame.image.load("queen.png")
+        queensprite = pygame.transform.scale(queensprite, (55, 110))
         Closed_chest_img = pygame.image.load("closed_chest.png")
         Closed_chest_img = pygame.transform.scale(Closed_chest_img, (115,115))
         full_chest_img = pygame.image.load("full_chest.png")
@@ -882,27 +895,23 @@ while running:
             print_text(f"Press L to Activate, Right Now", text_font_smaller, (0,0,250), 210, 500)
         if rook_powerup_activated == True and not dash_on:
             print_text(f"Press E to Activate, Right Now", text_font_smaller, (0,0,250), 210, 500)
-        
 
-        # dummy enemy
+
+        # enemy
         for e in enemies:
             e_rect = pygame.Rect(e[0]-10, e[1]-10, 20, 20)
-            pygame.draw.rect(screen, (255, 0, 0), e_rect)    
+            screen.blit(enemy_img, (e[0]-22.5, e[1]-37.5))    
 
-        # laser!!# laser!!!
+        # laser!
         if laser_on == True:
-            if click == True:
-                for l in laser:
-                    l_rect = pygame.Rect(l[0] - 10, l[1] - 10, 20, 20)
-                    pygame.draw.rect(screen, (255, 0, 0), l_rect)
-            else:
-                pygame.draw.line(screen, (0, 0, 255), (player_x + player_center[0], player_y + player_center[1]), (mouse_x, mouse_y), 1)
+            for l in laser:
+                l_rect = pygame.Rect(l[0] - 10, l[1] - 10, 20, 20)
+                pygame.draw.rect(screen, (255, 0, 0), l_rect)
 
 
         # bullet
-        for b in player_bullets:
-            b_rect = pygame.Rect(b[0]-2, b[1]-2, 4, 4)        
-            pygame.draw.rect(screen, (0, 0, 0), b_rect) 
+        for b in player_bullets: 
+            screen.blit(bullet_img, (b[0]-7, b[1]-7))
 
         # Points bar
         print_text(f"{points}", text_font, (0,0,0), 10, 10)
@@ -954,7 +963,7 @@ while running:
                 if draw_empty == True:
                     for chest in emptychest_list:
                         screen.blit(empty_chest_img, (chest_x, chest_y))
- 
+
  #coding for numbering how many powerups you pick up: COUNTER
         if rookPUP_counter >= 1:
                 if rookPUP_y > 600:
@@ -965,7 +974,7 @@ while running:
         if laserPUP_counter >= 1:
             if laserPUP_y >600:
                 print_text(f"{laserPUP_counter}", text_font_smaller, (0,0,0), laserPUP_x +55, laserPUP_y + 10)
-    
+
         #Draw Pause button
         pausebutton = pygame.image.load("pausebutton.png")
         smallpausebutton = pygame.transform.scale(pausebutton, (40, 40))
@@ -994,7 +1003,7 @@ while running:
                 print_text(f"Rook Power Up", text_font_smaller, (0, 0, 0), og_purchase_x+ 300, og_purchase_y)
                 screen.blit(coin_image, (og_purchase_x + 300, og_purchase_y+ +200))
                 print_text(f"{rookPUP_price}", text_font, (0, 0, 0), og_purchase_x+350, og_purchase_y+200)
-                
+
                 #health pup buy
                 pygame.draw.rect(screen, (coin_colour), (og_purchase_x+ 520, og_purchase_y, purchase_slots_width, purchase_slots_height))
                 screen.blit(healthPUP, (og_purchase_x + 580, og_purchase_y+ 80))
@@ -1057,3 +1066,6 @@ while running:
 
 
 pygame.quit()
+
+# you can delete this file lol
+
