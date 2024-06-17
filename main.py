@@ -284,6 +284,7 @@ pygame.mixer.init()
 pygame.mixer.music.load('background_music.mp3') 
 pygame.mixer.music.set_volume(settings['volume']['music'] / 100)
 pygame.mixer.music.play(-1)
+coin_sound = pygame.mixer.Sound('coinsound.mp3')
 #______________________________________________
 # Function to get the next available slot
 
@@ -771,7 +772,6 @@ while running:
     # Scene 2 (Instructions/setting screen) MARIA ADD UR STUFF HERE
     elif settings_screen == True:
         screen.fill(tan)
-        menu_open = False
 
         with open("settings.json", "w") as file:
             json.dump(settings, file)
