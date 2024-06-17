@@ -643,13 +643,12 @@ while running:
                 b[4] = -1
                 points += bullet_hit
                 player_hit_sfx.play()
-        if laser_powerup_activated == True and laser_on == True:
+        if laser_powerup_activated == True:
             for l in laser:
-                l_rect = pygame.Rect(l[0], l[1], 20, 20)
+                l_rect = pygame.Rect(l[0] -10, l[1] -10, 20, 20)
                 if l_rect.colliderect(e_rect):
                     e[4] -= 5
                     points += 1
-
         if e[4] > 0:
             enemies_alive.append(e)
         elif e[4] == 0:
