@@ -502,19 +502,16 @@ while running:
 
                 if selected_item == laserPUP:
                     laserPUP_counter += 1
-                    laserPUP_x, laserPUP_y, laserPUP_counter = handle_powerup_collision(laserPUP_x, laserPUP_y, laserPUP_counter)
                     if slots: 
                         new_slot = slots.pop(0)
                         laserPUP_x, laserPUP_y = new_slot
                 elif selected_item == healthPUP:
                     healthPUP_counter += 1 
-                    healthPUP_x, healthPUP_y, healthPUP_counter = handle_powerup_collision(healthPUP_y, healthPUP_y, healthPUP_counter)
                     if slots: 
                         new_slot = slots.pop(0)
                         healthPUP_x, healthPUP_y = new_slot
                 elif selected_item == rookPUP:
                     rookPUP_counter += 1
-                    rookPUP_x, rookPUP_y, rookPUP_counter = handle_powerup_collision(rookPUP_x, rookPUP_y, rookPUP_counter)
                     if slots:  
                         new_slot = slots.pop(0)
                         rookPUP_x, rookPUP_y = new_slot
@@ -571,14 +568,9 @@ while running:
         if laser_life < 0:
             laser_on = False
             laser_life = 120
-
-
-    # # dash
-    # if keys[109] and laser_cd < 0: # l possible bug? yeah
-    #     dash_on = True
-    #     dash_cd = 120
-    # else:
-    #     dash_cd -= 1
+        if laser_life == 0: 
+            laser_powerup_activated = False 
+        
     if rook_powerup_activated: 
         if keys[101] and laser_cd < 0: # l possible bug? yeah
             dash_on = True
@@ -597,6 +589,8 @@ while running:
                 dash_on = False
                 dash_life = 30
 
+        if dash_life == 0: 
+            rook_powerup_activated = False 
 
     # Catherine Enemy system
 
