@@ -119,10 +119,10 @@ rookPUP_x = 1000
 rookPUP_y = -1000
 
 coins = [
-    pygame.Rect(random.randrange(125, 700), random.randrange(550), 23, 23),
-    pygame.Rect(random.randrange(125, 700), random.randrange(550), 23, 23),
-    pygame.Rect(random.randrange(125, 700), random.randrange(550), 23, 23),
-    pygame.Rect(random.randrange(125, 700), random.randrange(550), 23, 23)
+    pygame.Rect(random.randrange(125,700), random.randrange(100,550), 23, 23),
+    pygame.Rect(random.randrange(125,700), random.randrange(100,550), 23, 23),
+    pygame.Rect(random.randrange(125,700), random.randrange(100,550), 23, 23),
+    pygame.Rect(random.randrange(125,700), random.randrange(100,550), 23, 23)
 ]
 c_collected = 0
 #coin bar
@@ -131,7 +131,7 @@ coin_bar_width = 200
 coin_bar_color = (255, 215, 0)
 
 # Chest parameters
-chest_x, chest_y = (random.randrange(50,600)), random.randrange(125, 550)
+chest_x, chest_y = (random.randrange(50,550)), random.randrange(125, 500)
 closedchest_list = [pygame.Rect(chest_x, chest_y, 90, 90)]
 fullchest_list = []
 emptychest_list = []
@@ -523,6 +523,14 @@ while running:
                 tutorial = False
             else:
                 f_key_pressed = False
+    if rook_powerup_activated:
+            slots.insert(0, new_slot)
+    
+    if health_powerup_activated:
+            slots.insert(0, new_slot)
+
+    if laser_powerup_activated:
+            slots.insert(0, new_slot)
 
 
     # Catherine's bullet system
