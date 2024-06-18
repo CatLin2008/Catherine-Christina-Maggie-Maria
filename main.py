@@ -298,15 +298,18 @@ coin_sound = pygame.mixer.Sound('coinsound.mp3')
 def calc_dist(x1, y1, x2, y2):
     a = y2 - y1
     b = x2 - x1
-    return (a**2 + b**2)**0.5
+    return (a**2 + b**2) ** 0.5
+
 
 # vectors calculator
 def calc_angle(x1, y1, x2, y2):
-    return math.atan2(y2 - y1, x2 - x1) # chat gpt
+    return math.atan2(y2 - y1, x2 - x1)  # chat gpt
+
 
 def calc_velocity(speed, angle):
     dx, dy = [speed * math.cos(angle), speed * math.sin(angle)]
     return dx, dy
+
 # ---------------------------
 #Maria Functions
 
@@ -320,15 +323,28 @@ while running:
     # EVENT HANDLING
     for event in pygame.event.get():
         if (event.type == KEYDOWN and event.key == K_ESCAPE) or event.type == pygame.QUIT:
-                running = False
-        elif event.type == pygame.MOUSEBUTTONDOWN: #vectors for bullet
+            running = False
+        elif event.type == pygame.MOUSEBUTTONDOWN:  # vectors for bullet
             if event.button == 1:  # Left mouse button
                 click_x, click_y = event.pos
                 print(click_x, click_y)
-                angle = calc_angle(player_x + player_center[0], player_y + player_center[1], mouse_x, mouse_y)
+                angle = calc_angle(
+                    player_x + player_center[0],
+                    player_y + player_center[1],
+                    mouse_x,
+                    mouse_y,
+                )
                 dx, dy = calc_velocity(bullet_speed, angle)
                 if laser_on == False:
-                    player_bullets.append([player_x + player_center[0], player_y + player_center[1], dx, dy, bullet_life])
+                    player_bullets.append(
+                        [
+                            player_x + player_center[0],
+                            player_y + player_center[1],
+                            dx,
+                            dy,
+                            bullet_life,
+                        ]
+                    )
 
             #christina's code for the counters of parameters of the obejcts 
             if laserPUP_counter >= 1:
@@ -447,17 +463,17 @@ while running:
         if keys[97] == True:  # a
             player_x -= 8 * dash
 
-    if player_y < HEIGHT-player_height:
+    if player_y < HEIGHT - player_height:
         if keys[115] == True:  # s
             player_y += 8 * dash
 
-    if player_x < WIDTH-player_width:
+    if player_x < WIDTH - player_width:
         if keys[100] == True:  # d
             player_x += 8 * dash
 
 
     # waves
-    if clear == True and tutorial == False: 
+    if clear == True and tutorial == False:
         wave += 1
         e_spawn_rate += 1
         enemy_speed += 0.1
@@ -467,18 +483,21 @@ while running:
         spawn_chest = False
         rook_powerup_activated = False
         health_powerup_activated = False
-        
+
         draw_empty = False
-        if wave > 1: 
+        if wave > 1:
             if chest_open == False:
                 chest_rect = pygame.Rect(chest_x, chest_y, 90, 90)
                 closedchest_list.append(chest_rect)
-                spawn_chest = False 
+                spawn_chest = False
             for _ in range(3):
-                coins.append(pygame.Rect(random.randrange(100, 800), random.randrange(600), 23, 23)) 
+                coins.append(
+                    pygame.Rect(random.randrange(100, 800), random.randrange(600), 23, 23)
+                )
 
     if wave % 2 == 0 or wave == 0:
         spawn_chest = True
+
 
     if spawn_chest:
         for chest in closedchest_list:
@@ -547,7 +566,7 @@ while running:
 
     # LAZERS!!!!
     if laser_powerup_activated == True:
-        if keys[108] == True and laser_cd < 0: # l
+        if keys[108] == True and laser_cd < 0:  # l
             laser_on = True
             laser_cd = 299
             if laser_cd < -1:
@@ -556,33 +575,35 @@ while running:
             error_sfx.play()
         else:
             laser_cd -= 1
-    
+
         laser = []
 
         laser_sfx.play()
-        angle = calc_angle(player_x + player_center[0], player_y + player_center[1], mouse_x, mouse_y)
+        angle = calc_angle(
+            player_x + player_center[0], player_y + player_center[1], mouse_x, mouse_y
+        )
         dx, dy = calc_velocity(bullet_speed, angle)
         laser_x = player_x + player_center[0]
         laser_y = player_y + player_center[1]
         print(laser_life)
         for _ in range(150):
             laser.append([laser_x, laser_y, dx, dy])
-            laser_x += dx/2
-            laser_y += dy/2
+            laser_x += dx / 2
+            laser_y += dy / 2
         laser_life -= 1
         if laser_life < 0:
             laser_on = False
             laser_life = 60
 
         if laser_life == 0:
-            laser_powerup_activated = False 
+            laser_powerup_activated = False
 
-    if rook_powerup_activated == True: 
-        if keys[101] and dash_cd < 0: # l possible bug? yeah
+    if rook_powerup_activated == True:
+        if keys[101] and dash_cd < 0:  # l possible bug? yeah
             dash_on = True
             dash_cd = 120
             dash_life = 30
-        elif keys[109] and dash_cd > 0: # l possible bug? yeah
+        elif keys[109] and dash_cd > 0:  # l possible bug? yeah
             error_sfx.play()
         else:
             dash_cd -= 1
@@ -595,12 +616,13 @@ while running:
                 dash = 1
                 dash_on = False
 
-        if dash_life == 0: 
+        if dash_life == 0:
             rook_powerup_activated = False
+
 
     # Catherine Enemy system
 
-    if clear == True and tutorial == False and wave % 6 != 0:  
+    if clear == True and tutorial == False and wave % 6 != 0:
         print("spawn")
         for _ in range(e_spawn_rate):
             spawn_pos = random.randrange(0, 4)
@@ -617,7 +639,7 @@ while running:
                 e_x = random.randrange(-100, 0)
                 e_y = random.randrange(0, HEIGHT)
 
-            enemy = [e_x, e_y, 0, 0, enemy_health] 
+            enemy = [e_x, e_y, 0, 0, enemy_health]
             enemies.append(enemy)
 
 
@@ -625,24 +647,28 @@ while running:
     e_rects = []
 
     for e in enemies:
-        enemy_to_player_dist = calc_dist(player_x + player_center[0], player_y + player_center[1], e[0], e[1])
-        enemy_angle = calc_angle(e[0] + 10, e[1]+10, player_x + player_center[0], player_y + player_center[1]) # +10 needs to change
+        enemy_to_player_dist = calc_dist(
+            player_x + player_center[0], player_y + player_center[1], e[0], e[1]
+        )
+        enemy_angle = calc_angle(
+            e[0] + 10, e[1] + 10, player_x + player_center[0], player_y + player_center[1]
+        )  # +10 needs to change
         e[2], e[3] = calc_velocity(enemy_speed, enemy_angle)
-        e_rect = pygame.Rect(e[0]-22.5, e[1]-37.5, 45, 75)
+        e_rect = pygame.Rect(e[0] - 22.5, e[1] - 37.5, 45, 75)
         e_rects.append(e_rect)
 
         if pause_open == False and menu_open == False and settings_screen == False:
             if enemy_to_player_dist != 0:
                 if enemy_to_player_dist < 50:
-                    e[0] += e[2]*3
-                    e[1] += e[3]*3
+                    e[0] += e[2] * 3
+                    e[1] += e[3] * 3
                 else:
                     e[0] += e[2]
                     e[1] += e[3]
-                #add attack animation
+                # add attack animation
 
         for b in player_bullets:
-            b_rect = pygame.Rect(b[0]-2, b[1]-2, 4, 4)
+            b_rect = pygame.Rect(b[0] - 2, b[1] - 2, 4, 4)
             if b_rect.colliderect(e_rect):
                 e[4] -= 10
                 b[4] = -1
@@ -650,7 +676,7 @@ while running:
                 player_hit_sfx.play()
         if laser_powerup_activated == True:
             for l in laser:
-                l_rect = pygame.Rect(l[0] -10, l[1] -10, 20, 20)
+                l_rect = pygame.Rect(l[0] - 10, l[1] - 10, 20, 20)
                 if l_rect.colliderect(e_rect):
                     e[4] -= 1
                     points += 1
@@ -659,7 +685,7 @@ while running:
         elif e[4] == 0:
             for _ in range(3):
                 e_coins = pygame.Rect(e[0], e[1], 23, 23)
-                coins.append(e_coins) 
+                coins.append(e_coins)
 
     enemies = enemies_alive
 
@@ -672,12 +698,16 @@ while running:
         if len(enemies) == 0 and tutorial == False:
             wave_cd -= 1
 
-    # player 
+    # player
     player_hitbox = white_player.get_rect()
     player_hitbox.topleft = (player_x, player_y)
 
     if damage_cooldown <= 0:
-        if player_hitbox.collidelist(e_rects) >= 0 and (pause_open == False) and (menu_open == False):
+        if (
+            player_hitbox.collidelist(e_rects) >= 0
+            and (pause_open == False)
+            and (menu_open == False)
+        ):
             player_hp -= 10
             damage_cooldown = 20
             player_hit_sfx.play()
@@ -688,6 +718,7 @@ while running:
         # high_score_manager.update_high_score(points)
         print("dead")
         dead_open = True
+
 
     #coins being collected 
 # note: code will be added to store the coin in inventory
@@ -721,12 +752,12 @@ while running:
         instructions2 = instruction_title_font.render('Explore the dungeon,', True, (125, 97, 7))
         instructions3 = instruction_title_font.render('collect coins, powerups', True, (125, 97, 7))
         instructions4 = instruction_title_font.render('and fight opponents.', True, (125, 97, 7))
-        
+
         screen.blit(instructions1,(128, 260))
         screen.blit(instructions2,(128, 290))
         screen.blit(instructions3,(128, 320))
         screen.blit(instructions4,(128, 350))
-    
+
         #Start Button
         startImg = pygame.image.load('startbutton.png')
         smallstart = pygame.transform.scale(startImg, (102,60))
@@ -771,7 +802,7 @@ while running:
         points = 0
         enemies = []
 
-    
+
         screen.fill(tan)
 
         with open("settings.json", "w") as file:
@@ -891,21 +922,23 @@ while running:
         # draw the pawn image
         if queen_powerup_activated == False:
             screen.blit(white_player, (player_x, player_y))
-        elif queen_powerup_activated == True: 
+        elif queen_powerup_activated == True:
             white_player == queensprite
             screen.blit(queensprite, (player_x, player_y))
             queenPUP_x, queenPUP_y = -100, -100
-            
+
         if rook_powerup_activated == True and not dash_on:
-            print_text(f"Press E to Activate, Right Now", text_font_smaller, (0,0,250), 210, 500)
+            print_text(
+                f"Press E to Activate, Right Now", text_font_smaller, (0, 0, 250), 210, 500
+            )
 
 
         # enemy
         for e in enemies:
-            e_rect = pygame.Rect(e[0]-10, e[1]-10, 20, 20)
-            screen.blit(enemy_img, (e[0]-22.5, e[1]-37.5))    
+            e_rect = pygame.Rect(e[0] - 10, e[1] - 10, 20, 20)
+            screen.blit(enemy_img, (e[0] - 22.5, e[1] - 37.5))
 
-       # laser!
+        # laser!
         if laser_powerup_activated == True:
             for l in laser:
                 l_rect = pygame.Rect(l[0] - 10, l[1] - 10, 20, 20)
@@ -913,21 +946,24 @@ while running:
 
 
         # bullet
-        for b in player_bullets: 
-            screen.blit(bullet_img, (b[0]-7, b[1]-7))
+        for b in player_bullets:
+            screen.blit(bullet_img, (b[0] - 7, b[1] - 7))
 
         # Points bar
-        print_text(f"{points}", text_font, (0,0,0), 10, 10)
+        print_text(f"{points}", text_font, (0, 0, 0), 10, 10)
 
         # health bar
-        pygame.draw.rect(screen, (255, 0, 0), (WIDTH/2-250, 595, (player_hp/100) * 500, 25))
+        pygame.draw.rect(
+            screen, (255, 0, 0), (WIDTH / 2 - 250, 595, (player_hp / 100) * 500, 25)
+        )
 
         # waves
         if wave_cd == 179:
-            print_text(f"WAVE {wave}", text_font, (0,0,0), WIDTH/2-100, 10)
-        else: 
+            print_text(f"WAVE {wave}", text_font, (0, 0, 0), WIDTH / 2 - 100, 10)
+        else:
             countdown = wave_cd // 60
-            print_text(f"NEXT WAVE IN {countdown+1}", text_font, (0,0,0), WIDTH/2-200, 10)
+            print_text(f"NEXT WAVE IN {countdown+1}", text_font, (0, 0, 0), WIDTH / 2 - 200, 10)
+
 
 
         #inventory lower bar 
@@ -1080,7 +1116,7 @@ while running:
             dead_open = False
             menu_open = True
             player_hp = 100
-        
+
 
 
             click_sfx.play()
